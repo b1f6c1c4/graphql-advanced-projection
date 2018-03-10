@@ -2,10 +2,10 @@
   "name": "graphql-advanced-projection",
   "version": "0.0.0",
   "description": "Fully customizable MongoDB projection generator.",
-  "main": "projection.js",
+  "main": "index.js",
   "repository": "https://github.com/b1f6c1c4/graphql-advanced-projection",
   "scripts": {
-    "test": "jest"
+    "test": "jest --coverage"
   },
   "author": "b1f6c1c4 <b1f6c1c4@gmail.com>",
   "license": "MIT",
@@ -17,5 +17,10 @@
     "graphql": ">0.12.3",
     "graphql-tools": "^2.18.0",
     "jest-cli": "^22.4.0"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.js"
+    ]
   }
 }
