@@ -1,28 +1,12 @@
 const genProjection = require('../src/projection');
+const fs = require('fs');
+const path = require('path');
 const { graphql } = require('graphql');
 const { makeExecutableSchema } = require('graphql-tools');
 
 describe('genProjection', () => {
-  const typeDefs = `
-type Query {
-  obj: [Obj!]
-}
-type Obj {
-  field1: String
-  field2: Foo
-  field3: [Father!]!
-}
-type Foo {
-  f1: String
-}
-interface Father {
-  g0: Int
-}
-type Child implements Father {
-  g0: Int
-  g1: String
-}
-`;
+  const typeDefs = fs.readFileSync(path.join(__dirname, 'schema.graphql'), 'utf-8');
+
   const run = (cfg, query) => new Promise((resolve) => {
     graphql(makeExecutableSchema({
       typeDefs,

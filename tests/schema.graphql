@@ -1,0 +1,22 @@
+type Query {
+  obj: [Obj!]
+}
+
+type Obj {
+  field1: String
+  field2: Foo
+  field3: [Father!]!
+}
+
+type Foo {
+  f1: String
+}
+
+interface Father {
+  g0: Int
+}
+
+type Child implements Father {
+  g0: Int
+  g1: String
+}
