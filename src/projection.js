@@ -1,23 +1,5 @@
 const _ = require('lodash');
-const logger = require('./logger');
-
-const genResolvers = (config) => {
-  logger.trace('genResolvers', config);
-  if (!config.proj) {
-    return {};
-  }
-  const res = {};
-  Object.keys(config.proj).forEach((k) => {
-    const def = config.proj[k];
-    if (typeof def === 'string') {
-      res[k] = (v) => _.get(v, def);
-    } else if (def.select) {
-      res[k] = (v) => _.get(v, def.select);
-    }
-  });
-  logger.trace('Generated resolvers', Object.keys(res));
-  return res;
-};
+const logger = require('../logger');
 
 const stripType = (typeRef) => {
   if (typeRef.ofType) {
@@ -132,7 +114,7 @@ function gen(
   }
 }
 
-const genProjection = (config) => (info) => {
+module.exports = (config) => (info) => {
   const context = info.fieldNodes[0];
   logger.trace('returnType', info.returnType);
   const type = stripType(info.returnType);
@@ -144,9 +126,4 @@ const genProjection = (config) => (info) => {
     return undefined;
   }
   return _.assign({ _id: 0 }, res);
-};
-
-module.exports = {
-  genResolvers,
-  genProjection,
 };

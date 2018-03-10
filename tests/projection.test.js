@@ -1,48 +1,6 @@
-const {
-  genResolvers,
-  genProjection,
-} = require('../projection');
-
+const genProjection = require('../src/projection');
 const { graphql } = require('graphql');
 const { makeExecutableSchema } = require('graphql-tools');
-
-describe('genResolver', () => {
-  it('should accept simple proj', () => {
-    expect(genResolvers({
-      prefix: 'wrap.',
-      proj: {
-        key: 'value',
-      },
-    }).key({
-      value: 'v',
-    })).toEqual('v');
-  });
-
-  it('should accept object proj', () => {
-    expect(genResolvers({
-      prefix: 'wrap.',
-      proj: {
-        key: {
-          query: 'fun',
-          select: 'value',
-        },
-      },
-    }).key({
-      value: 'v',
-    })).toEqual('v');
-  });
-
-  it('should accept undefined array proj', () => {
-    expect(genResolvers({
-      prefix: 'wrap.',
-      proj: {
-        key: {
-          query: 'fun',
-        },
-      },
-    }).key).toBeUndefined();
-  });
-});
 
 describe('genProjection', () => {
   const typeDefs = `
