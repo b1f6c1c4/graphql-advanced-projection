@@ -2,7 +2,7 @@ const _ = require('lodash');
 const logger = require('../logger');
 
 module.exports = (config) => {
-  logger.trace('genResolvers', config);
+  logger.trace('genResolver', config);
   if (!config.proj) {
     return {};
   }
@@ -15,6 +15,6 @@ module.exports = (config) => {
       res[k] = (v) => _.get(v, def.select);
     }
   });
-  logger.trace('Generated resolvers', Object.keys(res));
+  logger.trace('Generated resolver', Object.keys(res));
   return res;
 };

@@ -1,12 +1,12 @@
-const genResolvers = require('../src/resolvers');
+const genResolver = require('../src/resolver');
 
 describe('genResolver', () => {
   it('should accept empty', () => {
-    expect(genResolvers({})).toEqual({});
+    expect(genResolver({})).toEqual({});
   });
 
   it('should accept simple proj', () => {
-    expect(genResolvers({
+    expect(genResolver({
       prefix: 'wrap.',
       proj: {
         key: 'value',
@@ -17,7 +17,7 @@ describe('genResolver', () => {
   });
 
   it('should accept object proj', () => {
-    expect(genResolvers({
+    expect(genResolver({
       prefix: 'wrap.',
       proj: {
         key: {
@@ -31,7 +31,7 @@ describe('genResolver', () => {
   });
 
   it('should accept undefined array proj', () => {
-    expect(genResolvers({
+    expect(genResolver({
       prefix: 'wrap.',
       proj: {
         key: {
