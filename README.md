@@ -1,5 +1,9 @@
 # graphql-advanced-projection
 
+[![npm](https://img.shields.io/npm/v/graphql-advanced-projection.svg?style=flat-square)](https://www.npmjs.com/package/graphql-advanced-projection)
+[![Travis](https://img.shields.io/travis/b1f6c1c4/graphql-advanced-projection.svg?style=flat-square)](https://travis-ci.org/b1f6c1c4/graphql-advanced-projection)
+[![Coveralls](https://img.shields.io/coveralls/github/b1f6c1c4/graphql-advanced-projection.svg?style=flat-square)](https://coveralls.io/github/b1f6c1c4/graphql-advanced-projection)
+
 > Fully customizable MongoDB projection generator.
 
 ## Why

@@ -1,0 +1,18 @@
+language: node_js
+
+notifications:
+  email: false
+
+node_js:
+  - 8
+
+script:
+  - yarn test
+
+after_success:
+  - yarn coveralls
+
+cache:
+  yarn: true
+  directories:
+    - node_modules
