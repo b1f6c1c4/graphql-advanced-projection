@@ -5,14 +5,15 @@
 ## Installation
 
 ```sh
-$ yarn add --dev graphql-advanced-projection
+$ yarn add graphql-advanced-projection
 ```
 ## Usage
 
 ```js
-const projector = require('graphql-advanced-projection');
+const _ = require('lodash');
+const { genResovlers, genProjection } = require('graphql-advanced-projection');
 
-const project = projector({
+const config = {
   // User
   User: {
     proj: {
@@ -32,13 +33,13 @@ const project = projector({
   // This is actually part of 'users' collection
   // So everything is based on 'User'
   Item: {
-    prefix: 'item.',
+    prefix: 'items.',
     typeProj: 'type', // Polymorphism
   },
 
   // User
   ItemA: {
-    prefix: 'item.',
+    prefix: 'items.',
     proj: {
       values: 'data',
       firstValue: {
@@ -47,14 +48,29 @@ const project = projector({
       },
     },
   },
-});
+};
+
+const project = genProjection(config);
 
 module.exports = {
-  resolvers: {
+  resolvers: _.merge(genResolvers(config), {
     Query: {
       async user(parent, args, context, info) {
         const proj = project(info);
-        await User.findById(args.id, proj);
+        const result = await User.findById(args.id, proj);
+      },
+    },
+    User: {
+      items(parent) {
+        // You may add some logic here.
+        if (parent.status !== 'ALLOWED') {
+          return new Error('Status not allowed');
+        }
+        // If you wonder why we can use 'items' without specifing proj 'items':
+        // Since graphql enforces that at least one field of 'Item' been selected,
+        // at least one projection of /^items\./ will be added
+        // thus `parent.items` must exists.
+        return parent.items;
       },
     },
     Item: {
@@ -67,7 +83,7 @@ module.exports = {
         }
       },
     },
-  },
+  }),
 };
 ```
 
