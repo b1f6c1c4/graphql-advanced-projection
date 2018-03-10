@@ -11,40 +11,37 @@ $ yarn add graphql-advanced-projection
 
 ```js
 const _ = require('lodash');
-const { genResovlers, genProjection } = require('graphql-advanced-projection');
+const { makeExecutableSchema } = require('graphql-tools');
+const { genResolvers, genProjection } = require('graphql-advanced-projection');
 
 const config = {
-  // User
   User: {
     proj: {
+      // Basic syntax: <gqlField>:'<mongoField>'
       userId: '_id',
       a: 'extra.a', // Simple syntax for nested docs
       items: {
-        // Always query 'status' if client ask for items
+        // Always query 'status1', 'status2' if client ask for items
         // Very helpful for checking preconditions
-        query: 'status',
+        query: ['status1', 'status2'],
         // Dive into 'Item'
         recursive: true,
       },
     },
   },
 
-  // User
-  // This is actually part of 'users' collection
-  // So everything is based on 'User'
   Item: {
     prefix: 'items.',
     typeProj: 'type', // Polymorphism
   },
 
-  // User
   ItemA: {
     prefix: 'items.',
     proj: {
       values: 'data',
-      firstValue: {
+      first: {
         query: 'data',
-        select: 'date[0]', // More config, less code
+        select: 'data[0]',
       },
     },
   },
@@ -52,7 +49,32 @@ const config = {
 
 const project = genProjection(config);
 
-module.exports = {
+const typeDefs = `
+type Query {
+  user: User
+}
+type User {
+  userId: String # Query '_id' and select that
+  a: String      # Query 'extra.a' and select that
+  simple: Int    # Query 'simple' and select that
+  items: [Item]  # Query 'status1' and 'status2'
+}
+interface Item { # Query 'items.type'
+  foobar: String # Query 'items.foobar' and select that
+}
+type ItemA implements Item {
+  foobar: String
+  barfoo: String # Query 'items.barfoo' and select that
+  values: [Int]  # Query 'items.data' and select that
+  first: Int     # Query 'items.data' and select 'items.data[0]'
+}
+type ItemB implements Item {
+  foobar: String
+}
+`;
+
+module.exports = makeExecutableSchema({
+  typeDefs,
   resolvers: _.merge(genResolvers(config), {
     Query: {
       async user(parent, args, context, info) {
@@ -63,7 +85,7 @@ module.exports = {
     User: {
       items(parent) {
         // You may add some logic here.
-        if (parent.status !== 'ALLOWED') {
+        if (parent.status1 !== parent.status2) {
           return new Error('Status not allowed');
         }
         // If you wonder why we can use 'items' without specifing proj 'items':
@@ -78,13 +100,15 @@ module.exports = {
         switch (parent.type) {
           case 'typeA':
             return 'ItemA';
+          case 'typeB':
+            return 'ItemB';
           default:
             return null;
         }
       },
     },
   }),
-};
+});
 ```
 
 ## License
