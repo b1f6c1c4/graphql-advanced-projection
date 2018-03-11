@@ -32,6 +32,19 @@ describe('genProjection', () => {
     });
   });
 
+  it('should project ignore', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        proj: {
+          field1: null,
+        },
+      },
+    }, '{ obj { field1 } }')).resolves.toEqual({
+      _id: 0,
+    });
+  });
+
   it('should project simple', () => {
     expect.hasAssertions();
     return expect(run({

@@ -33,6 +33,7 @@ const config = {
       // Basic syntax: <gqlField>:'<mongoField>'
       userId: '_id',
       a: 'extra.a', // Simple syntax for nested docs
+      evil: null, // Don't project anyway
       items: {
         // Always query 'status1', 'status2' if client ask for items
         // Very helpful for checking preconditions
@@ -69,6 +70,7 @@ type Query {
 type User {
   userId: String # Query '_id' and select that
   a: String      # Query 'extra.a' and select that
+  evil: String   # No query
   simple: Int    # Query 'simple' and select that
   items: [Item]  # Query 'status1' and 'status2'
 }

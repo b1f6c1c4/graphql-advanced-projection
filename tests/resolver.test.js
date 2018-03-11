@@ -5,6 +5,15 @@ describe('genResolver', () => {
     expect(genResolver({})).toEqual({});
   });
 
+  it('should accept ignore proj', () => {
+    expect(genResolver({
+      prefix: 'wrap.',
+      proj: {
+        key: null,
+      },
+    }).key).toBeUndefined();
+  });
+
   it('should accept simple proj', () => {
     expect(genResolver({
       prefix: 'wrap.',
