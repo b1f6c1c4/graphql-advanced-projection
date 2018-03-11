@@ -15,6 +15,13 @@ describe('validate', () => {
     expect(recursive).toBeFalsy();
   });
 
+  it('should accept true', () => {
+    const { query, select, recursive } = validate(true);
+    expect(query).toEqual(null);
+    expect(select).toEqual(undefined);
+    expect(recursive).toBeTruthy();
+  });
+
   it('should accept string', () => {
     const { query, select, recursive } = validate('str');
     expect(query).toEqual('str');

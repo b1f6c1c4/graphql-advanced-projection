@@ -1,23 +1,19 @@
 const _ = require('lodash');
+const validate = require('./validate');
 const logger = require('../logger');
 
 module.exports = (config) => {
   logger.trace('genResolver', config);
-  if (!config.proj) {
-    return {};
-  }
-  const res = {};
-  Object.keys(config.proj).forEach((k) => {
-    const def = config.proj[k];
-    if (!def) {
-      return;
-    }
-    if (typeof def === 'string') {
-      res[k] = (v) => _.get(v, def);
-    } else if (def.select) {
-      res[k] = (v) => _.get(v, def.select);
-    }
-  });
-  logger.trace('Generated resolver', Object.keys(res));
+  const res = _.chain(config.proj)
+    .mapValues((v) => {
+      const { select } = validate(v);
+      if (select) {
+        return (parent) => _.get(parent, select);
+      }
+      return undefined;
+    })
+    .pickBy()
+    .value();
+  logger.trace('Generated resolver', _.keys(res));
   return res;
 };

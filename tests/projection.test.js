@@ -126,6 +126,43 @@ describe('genProjection', () => {
       },
     }, '{ obj { field1 } }')).resolves.toEqual({
       _id: 0,
+      'wrap.field1': 1,
+    });
+  });
+
+  it('should project object null', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        prefix: 'wrap.',
+        proj: {
+          field1: {
+            query: null,
+            select: 'x',
+          },
+        },
+      },
+    }, '{ obj { field1 } }')).resolves.toEqual({
+      _id: 0,
+    });
+  });
+
+  it('should not project nested if unset', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        prefix: 'wrap.',
+        proj: { },
+      },
+      Foo: {
+        prefix: 'wrap2.',
+        proj: {
+          f1: 'foo',
+        },
+      },
+    }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
+      _id: 0,
+      'wrap.field2': 1,
     });
   });
 
@@ -134,7 +171,9 @@ describe('genProjection', () => {
     return expect(run({
       Obj: {
         prefix: 'wrap.',
-        proj: { },
+        proj: {
+          field2: true,
+        },
       },
       Foo: {
         prefix: 'wrap2.',
@@ -263,6 +302,11 @@ fragment f on Obj {
   it('should project typeProj', () => {
     expect.hasAssertions();
     return expect(run({
+      Obj: {
+        proj: {
+          field3: true,
+        },
+      },
       Father: {
         prefix: 'wrap.',
         typeProj: 'type',
@@ -292,6 +336,11 @@ fragment f on Obj {
   it('should project inline fragment with typeCondition', () => {
     expect.hasAssertions();
     return expect(run({
+      Obj: {
+        proj: {
+          field3: true,
+        },
+      },
       Father: {
         prefix: 'wrap.',
         typeProj: 'type',
@@ -325,6 +374,11 @@ fragment f on Obj {
   it('should project fragment with typeCondition', () => {
     expect.hasAssertions();
     return expect(run({
+      Obj: {
+        proj: {
+          field3: true,
+        },
+      },
       Father: {
         prefix: 'wrap.',
         typeProj: 'type',

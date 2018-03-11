@@ -7,6 +7,9 @@ module.exports = (def) => {
   if (def === null) {
     return { query: null };
   }
+  if (def === true) {
+    return { query: null, recursive: true };
+  }
   if (_.isString(def)) {
     return {
       query: def,

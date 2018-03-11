@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const validate = require('./validate');
 const logger = require('../logger');
 
 const stripType = (typeRef) => {
@@ -31,63 +32,40 @@ function gen(
       switch (sel.kind) {
         case 'Field': {
           logger.debug('Projecting field', sel.name.value);
-          const def = cfg && _.get(cfg.proj, sel.name.value);
-          const goDefault = () => {
-            if (!sel.selectionSet) {
-              logger.trace('>Default', prefix + sel.name.value);
-              proj[prefix + sel.name.value] = 1;
-            } else {
-              const typeRef = info.schema.getType(type);
-              /* istanbul ignore if */
-              if (!typeRef) {
-                /* istanbul ignore next */
-                throw new Error('Type not found', type);
-              }
-              logger.trace('typeRef', typeRef.toString());
-              const field = typeRef.getFields()[sel.name.value];
-              /* istanbul ignore if */
-              if (!field) {
-                /* istanbul ignore next */
-                throw new Error('Field not found', sel.name.value);
-              }
-              const nextTypeRef = field.type;
-              logger.trace('nextTypeRef', nextTypeRef.toString());
-              const core = stripType(nextTypeRef);
-              logger.trace('Recursive', core);
-              Object.assign(proj, gen(root, sel, core));
-            }
-          };
-          const goSimple = (v) => {
-            if (Array.isArray(v)) {
-              v.forEach(goSimple);
-            } else {
-              logger.trace('>Simple', prefix + v);
+          const def = validate(cfg && _.get(cfg.proj, sel.name.value));
+          if (def.query === undefined) {
+            logger.trace('>Default', prefix + sel.name.value);
+            proj[prefix + sel.name.value] = 1;
+          } else if (def.query === null) {
+            logger.trace('>Ignored');
+          } else if (Array.isArray(def.query)) {
+            def.query.forEach((v) => {
+              logger.trace('>Simple array', prefix + v);
               proj[prefix + v] = 1;
-            }
-          };
-          if (def === null) {
-            logger.trace('>Ignore', sel.name.value);
-            return;
-          }
-          if (!def) {
-            goDefault();
-            return;
-          }
-          if (typeof def === 'string') {
-            goSimple(def);
-            return;
-          }
-          if (Array.isArray(def)) {
-            goSimple(def);
-            return;
-          }
-          if (def.query) {
-            goSimple(def.query);
+            });
+          } else {
+            logger.trace('>Simple', prefix + def.query);
+            proj[prefix + def.query] = 1;
           }
           if (def.recursive && sel.selectionSet) {
-            goDefault();
-          } else if (!def.query) {
-            logger.trace('>Ignored');
+            const typeRef = info.schema.getType(type);
+            /* istanbul ignore if */
+            if (!typeRef) {
+              /* istanbul ignore next */
+              throw new Error('Type not found', type);
+            }
+            logger.trace('typeRef', typeRef.toString());
+            const field = typeRef.getFields()[sel.name.value];
+            /* istanbul ignore if */
+            if (!field) {
+              /* istanbul ignore next */
+              throw new Error('Field not found', sel.name.value);
+            }
+            const nextTypeRef = field.type;
+            logger.trace('nextTypeRef', nextTypeRef.toString());
+            const core = stripType(nextTypeRef);
+            logger.trace('Recursive', core);
+            Object.assign(proj, gen(root, sel, core));
           }
           return;
         }
