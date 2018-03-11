@@ -1,5 +1,6 @@
 type Query {
   obj: [Obj!]
+  evil: Evil
 }
 
 type Obj {
@@ -19,4 +20,9 @@ interface Father {
 type Child implements Father {
   g0: Int
   g1: String
+}
+
+type Evil {
+  self: Evil
+  field: String
 }

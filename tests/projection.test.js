@@ -15,6 +15,9 @@ describe('genProjection', () => {
           obj: (parent, args, context, info) => {
             resolve(genProjection(cfg)(info));
           },
+          evil: (parent, args, context, info) => {
+            resolve(genProjection(cfg)(info));
+          },
         },
       },
     }), query).then((res) => {
@@ -407,6 +410,85 @@ fragment f on Child {
       'wrap.type': 1,
       'wrap.value': 1,
       'wrap2.value2': 1,
+    });
+  });
+
+  it('should handle deep nested', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Evil: {
+        proj: {
+          self: true,
+        },
+      },
+    }, `{
+  evil {
+    field
+    self {
+      field
+      self {
+        field
+      }
+    }
+  }
+}
+`)).resolves.toEqual({
+      _id: 0,
+      field: 1,
+    });
+  });
+
+  it('should handle deep nested prefix', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Evil: {
+        prefix: 'x.',
+        proj: {
+          self: true,
+        },
+      },
+    }, `{
+  evil {
+    field
+    self {
+      field
+      self {
+        field
+      }
+    }
+  }
+}
+`)).resolves.toEqual({
+      _id: 0,
+      'x.field': 1,
+    });
+  });
+
+  it('should handle deep nested prefix relative', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Evil: {
+        prefix: '.x.',
+        proj: {
+          self: true,
+        },
+      },
+    }, `{
+  evil {
+    field
+    self {
+      field
+      self {
+        field
+      }
+    }
+  }
+}
+`)).resolves.toEqual({
+      _id: 0,
+      'x.field': 1,
+      'x.x.field': 1,
+      'x.x.x.field': 1,
     });
   });
 });

@@ -12,6 +12,7 @@ const stripType = (typeRef) => {
 function gen(
   root,
   context,
+  prefix = '',
   type = context.typeCondition.name.value,
 ) {
   const { config, info } = root;
@@ -22,19 +23,22 @@ function gen(
     cfg = {};
   }
   const result = {};
-  const prefix = cfg.prefix || '';
+  const thisPrefix = cfg.prefix || '';
+  const pf = thisPrefix.startsWith('.')
+    ? prefix + thisPrefix.substr(1)
+    : thisPrefix;
   const proj = (reason, k) => {
     if (_.isArray(k)) {
       k.forEach((v) => {
-        logger.trace(`>${reason}`, prefix + v);
-        result[prefix + v] = 1;
+        logger.trace(`>${reason}`, pf + v);
+        result[pf + v] = 1;
       });
       return;
     }
     /* istanbul ignore else */
     if (_.isString(k)) {
-      logger.trace(`>${reason}`, prefix + k);
-      result[prefix + k] = 1;
+      logger.trace(`>${reason}`, pf + k);
+      result[pf + k] = 1;
       return;
     }
     /* istanbul ignore next */
@@ -75,7 +79,7 @@ function gen(
             logger.trace('nextTypeRef', nextTypeRef.toString());
             const core = stripType(nextTypeRef);
             logger.trace('Recursive', core);
-            _.assign(result, gen(root, sel, core));
+            _.assign(result, gen(root, sel, pf, core));
           }
           return;
         }
@@ -83,13 +87,13 @@ function gen(
           logger.debug('Projecting inline fragment');
           const core = _.get(sel, 'typeCondition.name.value') || type;
           logger.trace('Recursive', core);
-          _.assign(result, gen(root, sel, core));
+          _.assign(result, gen(root, sel, pf, core));
           return;
         }
         case 'FragmentSpread':
           logger.debug('Projecting fragment', sel.name.value);
           logger.trace('Recursive', sel.name.value);
-          _.assign(result, gen(root, info.fragments[sel.name.value]));
+          _.assign(result, gen(root, info.fragments[sel.name.value], pf));
           return;
         /* istanbul ignore next */
         default:
@@ -111,7 +115,7 @@ module.exports = (config) => (info) => {
   logger.trace('returnType', info.returnType);
   const type = stripType(info.returnType);
   logger.trace('Stripped returnType', type);
-  const res = gen({ config, info }, context, type);
+  const res = gen({ config, info }, context, undefined, type);
   /* istanbul ignore if */
   if (!res) {
     /* istanbul ignore next */
