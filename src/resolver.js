@@ -9,6 +9,9 @@ module.exports = (config) => {
   const res = {};
   Object.keys(config.proj).forEach((k) => {
     const def = config.proj[k];
+    if (!def) {
+      return;
+    }
     if (typeof def === 'string') {
       res[k] = (v) => _.get(v, def);
     } else if (def.select) {

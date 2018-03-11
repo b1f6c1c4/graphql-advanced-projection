@@ -65,6 +65,10 @@ function gen(
               proj[prefix + v] = 1;
             }
           };
+          if (def === null) {
+            logger.trace('>Ignore', sel.name.value);
+            return;
+          }
           if (!def) {
             goDefault();
             return;
