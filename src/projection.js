@@ -16,15 +16,32 @@ function gen(
 ) {
   const { config, info } = root;
   logger.debug('Projecting type', type);
-  const cfg = config[type];
+  let cfg = config[type];
   if (!cfg) {
     logger.debug('Type not found, default everywhere', type);
+    cfg = {};
   }
-  const proj = {};
-  const prefix = (cfg && cfg.prefix) || '';
-  if (cfg && cfg.typeProj) {
-    logger.trace('>TypeProj', prefix + cfg.typeProj);
-    proj[prefix + cfg.typeProj] = 1;
+  const result = {};
+  const prefix = cfg.prefix || '';
+  const proj = (reason, k) => {
+    if (_.isArray(k)) {
+      k.forEach((v) => {
+        logger.trace(`>${reason}`, prefix + v);
+        result[prefix + v] = 1;
+      });
+      return;
+    }
+    /* istanbul ignore else */
+    if (_.isString(k)) {
+      logger.trace(`>${reason}`, prefix + k);
+      result[prefix + k] = 1;
+      return;
+    }
+    /* istanbul ignore next */
+    throw new Error(`Proj not supported: ${k}`);
+  };
+  if (cfg.typeProj) {
+    proj('TypeProj', cfg.typeProj);
   }
   const sels = context.selectionSet.selections;
   try {
@@ -32,20 +49,13 @@ function gen(
       switch (sel.kind) {
         case 'Field': {
           logger.debug('Projecting field', sel.name.value);
-          const def = validate(cfg && _.get(cfg.proj, sel.name.value));
+          const def = validate(_.get(cfg.proj, sel.name.value));
           if (def.query === undefined) {
-            logger.trace('>Default', prefix + sel.name.value);
-            proj[prefix + sel.name.value] = 1;
+            proj('Default', sel.name.value);
           } else if (def.query === null) {
             logger.trace('>Ignored');
-          } else if (Array.isArray(def.query)) {
-            def.query.forEach((v) => {
-              logger.trace('>Simple array', prefix + v);
-              proj[prefix + v] = 1;
-            });
           } else {
-            logger.trace('>Simple', prefix + def.query);
-            proj[prefix + def.query] = 1;
+            proj('Simple', def.query);
           }
           if (def.recursive && sel.selectionSet) {
             const typeRef = info.schema.getType(type);
@@ -65,7 +75,7 @@ function gen(
             logger.trace('nextTypeRef', nextTypeRef.toString());
             const core = stripType(nextTypeRef);
             logger.trace('Recursive', core);
-            Object.assign(proj, gen(root, sel, core));
+            _.assign(result, gen(root, sel, core));
           }
           return;
         }
@@ -73,13 +83,13 @@ function gen(
           logger.debug('Projecting inline fragment');
           const core = _.get(sel, 'typeCondition.name.value') || type;
           logger.trace('Recursive', core);
-          Object.assign(proj, gen(root, sel, core));
+          _.assign(result, gen(root, sel, core));
           return;
         }
         case 'FragmentSpread':
           logger.debug('Projecting fragment', sel.name.value);
           logger.trace('Recursive', sel.name.value);
-          Object.assign(proj, gen(root, info.fragments[sel.name.value]));
+          _.assign(result, gen(root, info.fragments[sel.name.value]));
           return;
         /* istanbul ignore next */
         default:
@@ -87,7 +97,7 @@ function gen(
           throw new Error(`sel.kind not supported: ${sel.kind}`);
       }
     });
-    return proj;
+    return result;
   } catch (e) {
     /* istanbul ignore next */
     logger.error('Projecting', e);
