@@ -22,33 +22,32 @@ $ yarn add graphql-advanced-projection
 ```
 ## Usage
 
-See the `examples` folder for complete examples.
+> For a complete working demo, see the `examples` folder.
 
+### Setup `mongoose`
 ```js
-const _ = require('lodash');
-const mongoose = require('mongoose');
-const { makeExecutableSchema } = require('graphql-tools');
-const { genResolvers, genProjection } = require('graphql-advanced-projection');
-
-// GraphQL config
-const typeDefs = `
-  type Query {
-    user(id: ID!): User
-  }
-
-  type User {
-    userId: ID
-    field1: String
-    field2: String
-  }
-`;
-
-// Mongoose config
 const UserSchema = new mongoose.Schema({
   _id: String,
   mongoA: String,
 });
 const User = mongoose.model('users', UserSchema);
+```
+
+### Setup `graphql`
+```graphql
+type Query {
+  user(id: ID!): User
+}
+type User {
+  userId: ID
+  field1: String
+  field2: String
+}
+```
+
+### Setup `graphql-advanced-projection`
+```js
+const { genResolvers, genProjection } = require('graphql-advanced-projection');
 
 // Projection config
 const config = {
@@ -62,8 +61,14 @@ const config = {
 };
 const project = genProjection(config);
 const resolvers = genResolvers(config);
+```
 
-// Magic!
+### Combine everything together
+
+```js
+const _ = require('lodash');
+const { makeExecutableSchema } = require('graphql-tools');
+
 module.exports = makeExecutableSchema({
   typeDefs,
   resolvers: _.merge(resolvers, {
@@ -79,6 +84,23 @@ module.exports = makeExecutableSchema({
     },
   }),
 });
+```
+
+### Run
+
+```graphql
+query {
+  user(id: $id) {
+    field1
+    field2
+  }
+}
+```
+```js
+proj = {
+  _id: 0,
+  mongoA: 1,
+}
 ```
 
 ## License
