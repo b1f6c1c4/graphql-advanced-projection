@@ -1,0 +1,17 @@
+type Query {
+  user(id: ID!): User
+}
+
+interface User {
+  field1: Int
+}
+
+type AdminUser implements User {
+  field1: Int
+  field2: String
+}
+
+type NormalUser implements User {
+  field1: Int
+  field3: String
+}
