@@ -1,0 +1,11 @@
+type Query {
+  user(id: ID!): User
+}
+
+type User {
+  alters: [ExtraInfo]
+}
+
+type ExtraInfo {
+  field3: Int
+}
