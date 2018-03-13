@@ -1,5 +1,7 @@
 # graphql-advanced-projection
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/b1f6c1c4/graphql-advanced-projection.svg)](https://greenkeeper.io/)
+
 [![npm](https://img.shields.io/npm/v/graphql-advanced-projection.svg?style=flat-square)](https://www.npmjs.com/package/graphql-advanced-projection)
 [![npm](https://img.shields.io/npm/dt/graphql-advanced-projection.svg?style=flat-square)](https://www.npmjs.com/package/graphql-advanced-projection)
 [![GitHub last commit](https://img.shields.io/github/last-commit/b1f6c1c4/graphql-advanced-projection.svg?style=flat-square)](https://github.com/b1f6c1c4/graphql-advanced-projection)
