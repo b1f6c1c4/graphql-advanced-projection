@@ -9,11 +9,25 @@ const stripType = (typeRef) => {
   return typeRef.name;
 };
 
-function gen(
+const makePrefix = (prev, cur, subs) => {
+  let curr = cur;
+  if (curr === undefined) {
+    curr = subs;
+  }
+  if (!curr) {
+    return prev;
+  }
+  if (curr.startsWith('.')) {
+    return curr.substr(1);
+  }
+  return prev + curr;
+};
+
+function makeProjection(
   root,
   context,
-  prefix = '',
-  type = context.typeCondition.name.value,
+  prefix,
+  type,
 ) {
   const { config, info } = root;
   logger.debug('Projecting type', type);
@@ -23,10 +37,7 @@ function gen(
     cfg = {};
   }
   const result = {};
-  const thisPrefix = cfg.prefix || '';
-  const pf = thisPrefix.startsWith('.')
-    ? prefix + thisPrefix.substr(1)
-    : thisPrefix;
+  const pf = makePrefix(prefix, cfg.prefix);
   const proj = (reason, k) => {
     if (_.isArray(k)) {
       k.forEach((v) => {
@@ -47,67 +58,81 @@ function gen(
   if (cfg.typeProj) {
     proj('TypeProj', cfg.typeProj);
   }
-  const sels = context.selectionSet.selections;
-  try {
-    sels.forEach((sel) => {
-      switch (sel.kind) {
-        case 'Field': {
-          logger.debug('Projecting field', sel.name.value);
-          const def = validate(_.get(cfg.proj, sel.name.value));
-          if (def.query === undefined) {
-            proj('Default', sel.name.value);
-          } else if (def.query === null) {
-            logger.trace('>Ignored');
-          } else {
-            proj('Simple', def.query);
-          }
-          if (def.recursive && sel.selectionSet) {
-            const typeRef = info.schema.getType(type);
-            /* istanbul ignore if */
-            if (!typeRef) {
-              /* istanbul ignore next */
-              throw new Error('Type not found', type);
-            }
-            logger.trace('typeRef', typeRef.toString());
-            const field = typeRef.getFields()[sel.name.value];
-            /* istanbul ignore if */
-            if (!field) {
-              /* istanbul ignore next */
-              throw new Error('Field not found', sel.name.value);
-            }
-            const nextTypeRef = field.type;
-            logger.trace('nextTypeRef', nextTypeRef.toString());
-            const core = stripType(nextTypeRef);
-            logger.trace('Recursive', core);
-            _.assign(result, gen(root, sel, pf, core));
-          }
-          return;
+  context.selectionSet.selections.forEach((sel) => {
+    const fieldName = _.get(sel, 'name.value');
+    switch (sel.kind) {
+      case 'Field': {
+        logger.debug('Projecting field', fieldName);
+        const def = validate(_.get(cfg.proj, fieldName));
+        if (def.query === undefined) {
+          proj('Default', fieldName);
+        } else if (def.query === null) {
+          logger.trace('>Ignored');
+        } else {
+          proj('Simple', def.query);
         }
-        case 'InlineFragment': {
-          logger.debug('Projecting inline fragment');
-          const core = _.get(sel, 'typeCondition.name.value') || type;
+        if (def.recursive && sel.selectionSet) {
+          const typeRef = info.schema.getType(type);
+          /* istanbul ignore if */
+          if (!typeRef) {
+            /* istanbul ignore next */
+            throw new Error('Type not found', type);
+          }
+          logger.trace('typeRef', typeRef.toString());
+          const field = typeRef.getFields()[fieldName];
+          /* istanbul ignore if */
+          if (!field) {
+            /* istanbul ignore next */
+            throw new Error('Field not found', fieldName);
+          }
+          const nextTypeRef = field.type;
+          logger.trace('nextTypeRef', nextTypeRef.toString());
+          const core = stripType(nextTypeRef);
           logger.trace('Recursive', core);
-          _.assign(result, gen(root, sel, pf, core));
-          return;
+          _.assign(result, makeProjection(
+            root,
+            sel,
+            makePrefix(pf, def.prefix, `${fieldName}.`),
+            core,
+          ));
         }
-        case 'FragmentSpread':
-          logger.debug('Projecting fragment', sel.name.value);
-          logger.trace('Recursive', sel.name.value);
-          _.assign(result, gen(root, info.fragments[sel.name.value], pf));
-          return;
-        /* istanbul ignore next */
-        default:
-          /* istanbul ignore next */
-          throw new Error(`sel.kind not supported: ${sel.kind}`);
+        return;
       }
-    });
-    return result;
-  } catch (e) {
-    /* istanbul ignore next */
-    logger.error('Projecting', e);
-    /* istanbul ignore next */
-    return undefined;
-  }
+      case 'InlineFragment': {
+        logger.debug('Projecting inline fragment');
+        const newType = _.get(sel, 'typeCondition.name.value');
+        const newPrefix = newType ? pf : prefix;
+        const core = newType || type;
+        logger.trace('Recursive', { type: core, prefix: newPrefix });
+        _.assign(result, makeProjection(
+          root,
+          sel,
+          newPrefix,
+          core,
+        ));
+        return;
+      }
+      case 'FragmentSpread': {
+        logger.debug('Projecting fragment', fieldName);
+        const frag = info.fragments[fieldName];
+        const newType = _.get(frag, 'typeCondition.name.value');
+        const newPrefix = newType !== type ? pf : prefix;
+        logger.trace('Recursive', { type: newType, prefix: newPrefix });
+        _.assign(result, makeProjection(
+          root,
+          frag,
+          newPrefix,
+          newType,
+        ));
+        return;
+      }
+      /* istanbul ignore next */
+      default:
+        /* istanbul ignore next */
+        throw new Error(`sel.kind not supported: ${sel.kind}`);
+    }
+  });
+  return result;
 }
 
 module.exports = (config) => (info) => {
@@ -115,11 +140,15 @@ module.exports = (config) => (info) => {
   logger.trace('returnType', info.returnType);
   const type = stripType(info.returnType);
   logger.trace('Stripped returnType', type);
-  const res = gen({ config, info }, context, undefined, type);
-  /* istanbul ignore if */
-  if (!res) {
-    /* istanbul ignore next */
+  try {
+    return _.assign({ _id: 0 }, makeProjection(
+      { config, info },
+      context,
+      '',
+      type,
+    ));
+  } catch (e) {
+    logger.error('Projecting', e);
     return undefined;
   }
-  return _.assign({ _id: 0 }, res);
 };

@@ -27,6 +27,16 @@ describe('genProjection', () => {
     });
   });
 
+  it('should return undefined if error', () => {
+    expect.hasAssertions();
+    const evil = {
+      get Obj() {
+        throw new Error();
+      },
+    };
+    return expect(run(evil, '{ obj { field1 } }')).resolves.toBeUndefined();
+  });
+
   it('should project default when not configured', () => {
     expect.hasAssertions();
     return expect(run({}, '{ obj { field1 } }')).resolves.toEqual({
@@ -35,96 +45,13 @@ describe('genProjection', () => {
     });
   });
 
-  it('should project ignore', () => {
-    expect.hasAssertions();
-    return expect(run({
-      Obj: {
-        proj: {
-          field1: null,
-        },
-      },
-    }, '{ obj { field1 } }')).resolves.toEqual({
-      _id: 0,
-    });
-  });
-
-  it('should project simple', () => {
+  it('should project query undefined', () => {
     expect.hasAssertions();
     return expect(run({
       Obj: {
         prefix: 'wrap.',
         proj: {
-          field1: 'value',
-        },
-      },
-    }, '{ obj { field1 } }')).resolves.toEqual({
-      _id: 0,
-      'wrap.value': 1,
-    });
-  });
-
-  it('should project multiple', () => {
-    expect.hasAssertions();
-    return expect(run({
-      Obj: {
-        prefix: 'wrap.',
-        proj: {
-          field1: ['value', 'value2'],
-        },
-      },
-    }, '{ obj { field1 } }')).resolves.toEqual({
-      _id: 0,
-      'wrap.value': 1,
-      'wrap.value2': 1,
-    });
-  });
-
-  it('should project object', () => {
-    expect.hasAssertions();
-    return expect(run({
-      Obj: {
-        prefix: 'wrap.',
-        proj: {
-          field1: {
-            query: 'value',
-            select: 'x',
-          },
-        },
-      },
-    }, '{ obj { field1 } }')).resolves.toEqual({
-      _id: 0,
-      'wrap.value': 1,
-    });
-  });
-
-  it('should project object multiple', () => {
-    expect.hasAssertions();
-    return expect(run({
-      Obj: {
-        prefix: 'wrap.',
-        proj: {
-          field1: {
-            query: ['value', 'value2'],
-            select: 'x',
-          },
-        },
-      },
-    }, '{ obj { field1 } }')).resolves.toEqual({
-      _id: 0,
-      'wrap.value': 1,
-      'wrap.value2': 1,
-    });
-  });
-
-  it('should project object undefined', () => {
-    expect.hasAssertions();
-    return expect(run({
-      Obj: {
-        prefix: 'wrap.',
-        proj: {
-          field1: {
-            select: 'x',
-          },
+          field1: {},
         },
       },
     }, '{ obj { field1 } }')).resolves.toEqual({
@@ -133,15 +60,13 @@ describe('genProjection', () => {
     });
   });
 
-  it('should project object null', () => {
+  it('should project query null', () => {
     expect.hasAssertions();
     return expect(run({
       Obj: {
-        prefix: 'wrap.',
         proj: {
           field1: {
             query: null,
-            select: 'x',
           },
         },
       },
@@ -150,7 +75,42 @@ describe('genProjection', () => {
     });
   });
 
-  it('should not project nested if unset', () => {
+  it('should project query simple', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        prefix: 'wrap.',
+        proj: {
+          field1: {
+            query: 'value',
+          },
+        },
+      },
+    }, '{ obj { field1 } }')).resolves.toEqual({
+      _id: 0,
+      'wrap.value': 1,
+    });
+  });
+
+  it('should project query multiple', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        prefix: 'wrap.',
+        proj: {
+          field1: {
+            query: ['value', 'value2'],
+          },
+        },
+      },
+    }, '{ obj { field1 } }')).resolves.toEqual({
+      _id: 0,
+      'wrap.value': 1,
+      'wrap.value2': 1,
+    });
+  });
+
+  it('should not project recursive if false', () => {
     expect.hasAssertions();
     return expect(run({
       Obj: {
@@ -160,7 +120,7 @@ describe('genProjection', () => {
       Foo: {
         prefix: 'wrap2.',
         proj: {
-          f1: 'foo',
+          f1: { query: 'foo' },
         },
       },
     }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
@@ -169,92 +129,133 @@ describe('genProjection', () => {
     });
   });
 
-  it('should project nested', () => {
-    expect.hasAssertions();
-    return expect(run({
-      Obj: {
-        prefix: 'wrap.',
-        proj: {
-          field2: true,
-        },
-      },
-      Foo: {
-        prefix: 'wrap2.',
-        proj: {
-          f1: 'foo',
-        },
-      },
-    }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
-      _id: 0,
-      'wrap2.foo': 1,
-    });
-  });
-
-  it('should project nested simple override', () => {
-    expect.hasAssertions();
-    return expect(run({
-      Obj: {
-        prefix: 'wrap.',
-        proj: {
-          field2: 'wrap2',
-        },
-      },
-      Foo: {
-        prefix: 'wrap2.',
-        proj: {
-          f1: 'foo',
-        },
-      },
-    }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
-      _id: 0,
-      'wrap.wrap2': 1,
-    });
-  });
-
-  it('should project nested force override', () => {
+  it('should project recursive', () => {
     expect.hasAssertions();
     return expect(run({
       Obj: {
         prefix: 'wrap.',
         proj: {
           field2: {
-            query: 'wrap2',
-          },
-        },
-      },
-      Foo: {
-        prefix: 'wrap2.',
-        proj: {
-          f1: 'foo',
-        },
-      },
-    }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
-      _id: 0,
-      'wrap.wrap2': 1,
-    });
-  });
-
-  it('should project nested additional override', () => {
-    expect.hasAssertions();
-    return expect(run({
-      Obj: {
-        prefix: 'wrap.',
-        proj: {
-          field2: {
-            query: 'wrap2',
+            query: ['evil', 'evils'],
             recursive: true,
           },
         },
       },
-      Foo: {
-        prefix: 'wrap2.',
+    }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
+      _id: 0,
+      'wrap.evil': 1,
+      'wrap.evils': 1,
+      'wrap.field2.f1': 1,
+    });
+  });
+
+  it('should project recursive prefix null', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        prefix: 'wrap.',
         proj: {
-          f1: 'foo',
+          field2: {
+            query: ['evil', 'evils'],
+            recursive: true,
+            prefix: null,
+          },
         },
       },
     }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
       _id: 0,
-      'wrap.wrap2': 1,
+      'wrap.evil': 1,
+      'wrap.evils': 1,
+      'wrap.f1': 1,
+    });
+  });
+
+  it('should project recursive prefix', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        prefix: 'wrap.',
+        proj: {
+          field2: {
+            query: ['evil', 'evils'],
+            recursive: true,
+            prefix: 'xxx.',
+          },
+        },
+      },
+    }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
+      _id: 0,
+      'wrap.evil': 1,
+      'wrap.evils': 1,
+      'wrap.xxx.f1': 1,
+    });
+  });
+
+  it('should project recursive prefix absolute', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        prefix: 'wrap.',
+        proj: {
+          field2: {
+            query: null,
+            recursive: true,
+            prefix: '.xxx.',
+          },
+        },
+      },
+    }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
+      _id: 0,
+      'xxx.f1': 1,
+    });
+  });
+
+  it('should project recursive relative', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        prefix: 'wrap.',
+        proj: {
+          field2: {
+            query: null,
+            recursive: true,
+            prefix: 'xxx.',
+          },
+        },
+      },
+      Foo: {
+        prefix: 'wrap2.',
+        proj: {
+          f1: { query: 'foo' },
+        },
+      },
+    }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
+      _id: 0,
+      'wrap.xxx.wrap2.foo': 1,
+    });
+  });
+
+  it('should project recursive absolute', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        prefix: 'wrap.',
+        proj: {
+          field2: {
+            query: null,
+            recursive: true,
+            prefix: 'xxx.',
+          },
+        },
+      },
+      Foo: {
+        prefix: '.wrap2.',
+        proj: {
+          f1: { query: 'foo' },
+        },
+      },
+    }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
+      _id: 0,
       'wrap2.foo': 1,
     });
   });
@@ -265,7 +266,7 @@ describe('genProjection', () => {
       Obj: {
         prefix: 'wrap.',
         proj: {
-          field1: 'value',
+          field1: { query: 'value' },
         },
       },
     }, `{
@@ -280,13 +281,38 @@ describe('genProjection', () => {
     });
   });
 
+  it('should project deep inline fragment', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        prefix: 'wrap.',
+        proj: {
+          field1: { query: 'value' },
+        },
+      },
+    }, `{
+  obj {
+    ... {
+      ... {
+        ... {
+          field1
+        }
+      }
+    }
+  }
+}`)).resolves.toEqual({
+      _id: 0,
+      'wrap.value': 1,
+    });
+  });
+
   it('should project fragment', () => {
     expect.hasAssertions();
     return expect(run({
       Obj: {
         prefix: 'wrap.',
         proj: {
-          field1: 'value',
+          field1: { query: 'value' },
         },
       },
     }, `{
@@ -296,7 +322,37 @@ describe('genProjection', () => {
 }
 fragment f on Obj {
   field1
-}`)).resolves.toEqual({
+}
+`)).resolves.toEqual({
+      _id: 0,
+      'wrap.value': 1,
+    });
+  });
+
+  it('should project deep fragment', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        prefix: 'wrap.',
+        proj: {
+          field1: { query: 'value' },
+        },
+      },
+    }, `{
+  obj {
+    ...f
+  }
+}
+fragment f on Obj {
+  ...g
+}
+fragment g on Obj {
+  ...h
+}
+fragment h on Obj {
+  field1
+}
+`)).resolves.toEqual({
       _id: 0,
       'wrap.value': 1,
     });
@@ -307,20 +363,24 @@ fragment f on Obj {
     return expect(run({
       Obj: {
         proj: {
-          field3: true,
+          field3: {
+            query: null,
+            recursive: true,
+            prefix: 'evil.',
+          },
         },
       },
       Father: {
         prefix: 'wrap.',
         typeProj: 'type',
         proj: {
-          g0: 'value',
+          g0: { query: 'value' },
         },
       },
       Child: {
         prefix: 'wrap2.',
         proj: {
-          g1: 'value2',
+          g1: { query: 'value2' },
         },
       },
     }, `{
@@ -331,8 +391,8 @@ fragment f on Obj {
   }
 }`)).resolves.toEqual({
       _id: 0,
-      'wrap.type': 1,
-      'wrap.value': 1,
+      'evil.wrap.type': 1,
+      'evil.wrap.value': 1,
     });
   });
 
@@ -341,20 +401,24 @@ fragment f on Obj {
     return expect(run({
       Obj: {
         proj: {
-          field3: true,
+          field3: {
+            query: null,
+            recursive: true,
+            prefix: 'evil.',
+          },
         },
       },
       Father: {
         prefix: 'wrap.',
         typeProj: 'type',
         proj: {
-          g0: 'value',
+          g0: { query: 'value' },
         },
       },
       Child: {
         prefix: 'wrap2.',
         proj: {
-          g1: 'value2',
+          g1: { query: 'value2' },
         },
       },
     }, `{
@@ -368,9 +432,97 @@ fragment f on Obj {
   }
 }`)).resolves.toEqual({
       _id: 0,
-      'wrap.type': 1,
-      'wrap.value': 1,
-      'wrap2.value2': 1,
+      'evil.wrap.type': 1,
+      'evil.wrap.value': 1,
+      'evil.wrap.wrap2.value2': 1,
+    });
+  });
+
+  it('should project deep inline fragment with typeCondition', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        proj: {
+          field3: {
+            query: null,
+            recursive: true,
+            prefix: 'evil.',
+          },
+        },
+      },
+      Father: {
+        prefix: 'wrap.',
+        typeProj: 'type',
+        proj: {
+          g0: { query: 'value' },
+        },
+      },
+      Child: {
+        prefix: 'wrap2.',
+        proj: {
+          g1: { query: 'value2' },
+        },
+      },
+    }, `{
+  obj {
+    field3 {
+      g0
+      ... on Child {
+        ... {
+          ... on Child {
+            g1
+          }
+        }
+      }
+    }
+  }
+}`)).resolves.toEqual({
+      _id: 0,
+      'evil.wrap.type': 1,
+      'evil.wrap.value': 1,
+      'evil.wrap.wrap2.wrap2.value2': 1,
+    });
+  });
+
+  it('should project inline fragment with typeCondition partial', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        proj: {
+          field3: {
+            query: null,
+            recursive: true,
+            prefix: 'evil.',
+          },
+        },
+      },
+      Father: {
+        prefix: 'wrap.',
+        typeProj: 'type',
+        proj: {
+          g0: { query: 'value' },
+        },
+      },
+      Child: {
+        prefix: 'wrap2.',
+        proj: {
+          g1: { query: 'value2' },
+        },
+      },
+    }, `{
+  obj {
+    field3 {
+      ... on Child {
+        g0
+        g1
+      }
+    }
+  }
+}`)).resolves.toEqual({
+      _id: 0,
+      'evil.wrap.type': 1,
+      'evil.wrap.wrap2.g0': 1,
+      'evil.wrap.wrap2.value2': 1,
     });
   });
 
@@ -379,20 +531,24 @@ fragment f on Obj {
     return expect(run({
       Obj: {
         proj: {
-          field3: true,
+          field3: {
+            query: null,
+            recursive: true,
+            prefix: null,
+          },
         },
       },
       Father: {
         prefix: 'wrap.',
         typeProj: 'type',
         proj: {
-          g0: 'value',
+          g0: { query: 'value' },
         },
       },
       Child: {
         prefix: 'wrap2.',
         proj: {
-          g1: 'value2',
+          g1: { query: 'value2' },
         },
       },
     }, `{
@@ -405,11 +561,12 @@ fragment f on Obj {
 }
 fragment f on Child {
   g1
-}`)).resolves.toEqual({
+}
+`)).resolves.toEqual({
       _id: 0,
       'wrap.type': 1,
       'wrap.value': 1,
-      'wrap2.value2': 1,
+      'wrap.wrap2.value2': 1,
     });
   });
 
@@ -418,7 +575,11 @@ fragment f on Child {
     return expect(run({
       Evil: {
         proj: {
-          self: true,
+          self: {
+            query: null,
+            recursive: true,
+            prefix: null,
+          },
         },
       },
     }, `{
@@ -442,9 +603,13 @@ fragment f on Child {
     expect.hasAssertions();
     return expect(run({
       Evil: {
-        prefix: 'x.',
+        prefix: '.x.',
         proj: {
-          self: true,
+          self: {
+            query: null,
+            recursive: true,
+            prefix: null,
+          },
         },
       },
     }, `{
@@ -468,9 +633,13 @@ fragment f on Child {
     expect.hasAssertions();
     return expect(run({
       Evil: {
-        prefix: '.x.',
+        prefix: 'x.',
         proj: {
-          self: true,
+          self: {
+            query: null,
+            recursive: true,
+            prefix: null,
+          },
         },
       },
     }, `{
@@ -489,6 +658,190 @@ fragment f on Child {
       'x.field': 1,
       'x.x.field': 1,
       'x.x.x.field': 1,
+    });
+  });
+
+  it('should handle deep nested proj prefix', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Evil: {
+        proj: {
+          self: {
+            query: null,
+            recursive: true,
+            prefix: 'y.',
+          },
+        },
+      },
+    }, `{
+  evil {
+    field
+    self {
+      field
+      self {
+        field
+      }
+    }
+  }
+}
+`)).resolves.toEqual({
+      _id: 0,
+      field: 1,
+      'y.field': 1,
+      'y.y.field': 1,
+    });
+  });
+
+  it('should handle deep nested proj prefix prefix', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Evil: {
+        prefix: '.x.',
+        proj: {
+          self: {
+            query: null,
+            recursive: true,
+            prefix: 'y.',
+          },
+        },
+      },
+    }, `{
+  evil {
+    field
+    self {
+      field
+      self {
+        field
+      }
+    }
+  }
+}
+`)).resolves.toEqual({
+      _id: 0,
+      'x.field': 1,
+    });
+  });
+
+  it('should handle deep nested proj prefix prefix relative', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Evil: {
+        prefix: 'x.',
+        proj: {
+          self: {
+            query: null,
+            recursive: true,
+            prefix: 'y.',
+          },
+        },
+      },
+    }, `{
+  evil {
+    field
+    self {
+      field
+      self {
+        field
+      }
+    }
+  }
+}
+`)).resolves.toEqual({
+      _id: 0,
+      'x.field': 1,
+      'x.y.x.field': 1,
+      'x.y.x.y.x.field': 1,
+    });
+  });
+
+  it('should handle deep nested proj prefix abs', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Evil: {
+        proj: {
+          self: {
+            query: null,
+            recursive: true,
+            prefix: '.y.',
+          },
+        },
+      },
+    }, `{
+  evil {
+    field
+    self {
+      field
+      self {
+        field
+      }
+    }
+  }
+}
+`)).resolves.toEqual({
+      _id: 0,
+      field: 1,
+      'y.field': 1,
+    });
+  });
+
+  it('should handle deep nested proj prefix abs prefix', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Evil: {
+        prefix: '.x.',
+        proj: {
+          self: {
+            query: null,
+            recursive: true,
+            prefix: '.y.',
+          },
+        },
+      },
+    }, `{
+  evil {
+    field
+    self {
+      field
+      self {
+        field
+      }
+    }
+  }
+}
+`)).resolves.toEqual({
+      _id: 0,
+      'x.field': 1,
+    });
+  });
+
+  it('should handle deep nested proj prefix abs prefix relative', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Evil: {
+        prefix: 'x.',
+        proj: {
+          self: {
+            query: null,
+            recursive: true,
+            prefix: '.y.',
+          },
+        },
+      },
+    }, `{
+  evil {
+    field
+    self {
+      field
+      self {
+        field
+      }
+    }
+  }
+}
+`)).resolves.toEqual({
+      _id: 0,
+      'x.field': 1,
+      'y.x.field': 1,
     });
   });
 });
