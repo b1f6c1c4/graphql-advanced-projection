@@ -34,6 +34,14 @@ describe('validate', () => {
   });
 
   it('should accept recursive string', () => {
+    const result = validate('str.');
+    expect(result.query).toEqual(null);
+    expect(result.select).toEqual('str');
+    expect(result.recursive).toBeTruthy();
+    expect(result.prefix).toEqual('str.');
+  });
+
+  it('should accept recursive string', () => {
     const result = validate('str');
     expect(result.query).toEqual('str');
     expect(result.select).toEqual('str');
@@ -65,10 +73,11 @@ describe('validate', () => {
     const result = validate({
       query: ['a', 'b'],
       recursive: true,
+      prefix: 'xxx',
     });
     expect(result.query).toEqual(['a', 'b']);
     expect(result.select).toEqual(undefined);
     expect(result.recursive).toBeTruthy();
-    expect(result.prefix).toBeUndefined();
+    expect(result.prefix).toEqual('xxx');
   });
 });

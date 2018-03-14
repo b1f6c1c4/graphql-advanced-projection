@@ -11,6 +11,14 @@ module.exports = (def) => {
     return { query: null, recursive: true };
   }
   if (_.isString(def)) {
+    if (def.endsWith('.')) {
+      return {
+        query: null,
+        select: def.substr(0, def.length - 1),
+        recursive: true,
+        prefix: def,
+      };
+    }
     return {
       query: def,
       select: def,
@@ -25,5 +33,6 @@ module.exports = (def) => {
     query: def.query,
     select: def.select,
     recursive: !!def.recursive,
+    prefix: def.prefix,
   };
 };
