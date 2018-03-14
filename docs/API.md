@@ -48,9 +48,7 @@ Example:
 - Otherwise, it MUST be of `[[null | String]]`:
   - The whole config matches if and only if at least one `[null | String]` matches the path.
   - `null` can match zero, one, or more path items.
-  - String MUST starts with an alphabet character:
-    - A string starts with a non-capital alphabet can match one path item (exactly match its key) and following numeric keys.
-    - A string starts with a capital alphabet can match one path item (exactly match its type) and previous array types.
+  - A string can match one path item (exactly match its key) and following numeric keys.
 
 # Type config object
 
