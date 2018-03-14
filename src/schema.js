@@ -32,7 +32,7 @@ function normalize(config) {
   if (_.isArray(config)) {
     return config.map(([m, t]) => [norm(m), t]);
   }
-  return [[{}, config]];
+  return [[[[null]], config]];
 }
 
 /*

@@ -20,7 +20,7 @@ describe('unwindPath', () => {
 
 describe('normalize', () => {
   it('should accept object', () => {
-    expect(normalize({ obj: true })).toEqual([[{}, { obj: true }]]);
+    expect(normalize({ obj: true })).toEqual([[[[null]], { obj: true }]]);
   });
 
   it('should accept missing', () => {
