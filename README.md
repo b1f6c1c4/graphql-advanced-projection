@@ -12,7 +12,7 @@
 [![Badges](https://img.shields.io/badge/badges-9%2F9-ff6799.svg?style=flat-square)](https://shields.io/)
 <!-- [![Greenkeeper badge](https://badges.greenkeeper.io/b1f6c1c4/graphql-advanced-projection.svg)](https://greenkeeper.io/) -->
 
-> Fully customizable MongoDB projection generator.
+> Fully customizable Mongoose/MongoDB projection generator.
 
 ## Why
 
