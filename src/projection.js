@@ -141,7 +141,8 @@ module.exports = (config) => (info) => {
   const type = stripType(info.returnType);
   logger.trace('Stripped returnType', type);
   try {
-    return _.assign({ _id: 0 }, makeProjection(
+    const root = config.root || { _id: 0 };
+    return _.assign(root, makeProjection(
       { config, info },
       context,
       '',

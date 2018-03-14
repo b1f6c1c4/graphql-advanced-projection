@@ -90,4 +90,5 @@ fieldA: { query: 'mongoA' }, // Project 'mongoA'
 
 # Global settings
 
-Currently, no global setting is used.
+- `root: Object` - Base projection.
+  - If undefined, `{ _id: 0 }` will be used.

@@ -37,6 +37,14 @@ describe('genProjection', () => {
     return expect(run(evil, '{ obj { field1 } }')).resolves.toBeUndefined();
   });
 
+  it('should project root', () => {
+    expect.hasAssertions();
+    return expect(run({ root: { itst: 1 } }, '{ obj { field1 } }')).resolves.toEqual({
+      itst: 1,
+      field1: 1,
+    });
+  });
+
   it('should project default when not configured', () => {
     expect.hasAssertions();
     return expect(run({}, '{ obj { field1 } }')).resolves.toEqual({
