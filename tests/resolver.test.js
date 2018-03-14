@@ -19,7 +19,7 @@ describe('genResolvers', () => {
     }),
   }), query);
 
-  it.only('should accept simple', async (done) => {
+  it('should accept simple', async (done) => {
     const result = await run({
       Obj: {
         proj: {
