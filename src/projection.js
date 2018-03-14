@@ -23,11 +23,11 @@ const makePrefix = (prev, cur, subs) => {
   return prev + curr;
 };
 
-function gen(
+function makeProjection(
   root,
   context,
-  prefix = '',
-  type = context.typeCondition.name.value,
+  prefix,
+  type,
 ) {
   const { config, info } = root;
   logger.debug('Projecting type', type);
@@ -59,12 +59,13 @@ function gen(
     proj('TypeProj', cfg.typeProj);
   }
   context.selectionSet.selections.forEach((sel) => {
+    const fieldName = _.get(sel, 'name.value');
     switch (sel.kind) {
       case 'Field': {
-        logger.debug('Projecting field', sel.name.value);
-        const def = validate(_.get(cfg.proj, sel.name.value));
+        logger.debug('Projecting field', fieldName);
+        const def = validate(_.get(cfg.proj, fieldName));
         if (def.query === undefined) {
-          proj('Default', sel.name.value);
+          proj('Default', fieldName);
         } else if (def.query === null) {
           logger.trace('>Ignored');
         } else {
@@ -78,36 +79,51 @@ function gen(
             throw new Error('Type not found', type);
           }
           logger.trace('typeRef', typeRef.toString());
-          const field = typeRef.getFields()[sel.name.value];
+          const field = typeRef.getFields()[fieldName];
           /* istanbul ignore if */
           if (!field) {
             /* istanbul ignore next */
-            throw new Error('Field not found', sel.name.value);
+            throw new Error('Field not found', fieldName);
           }
           const nextTypeRef = field.type;
           logger.trace('nextTypeRef', nextTypeRef.toString());
           const core = stripType(nextTypeRef);
           logger.trace('Recursive', core);
-          _.assign(result, gen(root, sel, makePrefix(pf, def.prefix, `${sel.name.value}.`), core));
+          _.assign(result, makeProjection(
+            root,
+            sel,
+            makePrefix(pf, def.prefix, `${fieldName}.`),
+            core,
+          ));
         }
         return;
       }
       case 'InlineFragment': {
         logger.debug('Projecting inline fragment');
         const newType = _.get(sel, 'typeCondition.name.value');
-        const core = newType || type;
         const newPrefix = newType ? pf : prefix;
+        const core = newType || type;
         logger.trace('Recursive', { type: core, prefix: newPrefix });
-        _.assign(result, gen(root, sel, newPrefix, core));
+        _.assign(result, makeProjection(
+          root,
+          sel,
+          newPrefix,
+          core,
+        ));
         return;
       }
       case 'FragmentSpread': {
-        logger.debug('Projecting fragment', sel.name.value);
-        const frag = info.fragments[sel.name.value];
+        logger.debug('Projecting fragment', fieldName);
+        const frag = info.fragments[fieldName];
         const newType = _.get(frag, 'typeCondition.name.value');
         const newPrefix = newType !== type ? pf : prefix;
         logger.trace('Recursive', { type: newType, prefix: newPrefix });
-        _.assign(result, gen(root, info.fragments[sel.name.value], newPrefix));
+        _.assign(result, makeProjection(
+          root,
+          frag,
+          newPrefix,
+          newType,
+        ));
         return;
       }
       /* istanbul ignore next */
@@ -125,8 +141,12 @@ module.exports = (config) => (info) => {
   const type = stripType(info.returnType);
   logger.trace('Stripped returnType', type);
   try {
-    const res = gen({ config, info }, context, undefined, type);
-    return _.assign({ _id: 0 }, res);
+    return _.assign({ _id: 0 }, makeProjection(
+      { config, info },
+      context,
+      '',
+      type,
+    ));
   } catch (e) {
     logger.error('Projecting', e);
     return undefined;
