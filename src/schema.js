@@ -119,7 +119,7 @@ const appendExact = (NFA, str) => {
   NFA.push({ [NUMBER]: [len] });
 };
 
-const matchSchema = (cfg) => (path) => {
+const matchSchema = (cfg) => {
   const NFA = [{}];
   cfg.forEach((c) => {
     if (c === null) {
@@ -129,11 +129,30 @@ const matchSchema = (cfg) => (path) => {
     }
   });
   NFA[NFA.length - 1][ACCEPT] = true;
-  return run(NFA, path);
+  return (path) => run(NFA, path);
+};
+
+const matchSchemas = (cfgs) => {
+  const ms = cfgs.map(matchSchema);
+  return (path) => ms.some((m) => m(path));
+};
+
+const pickType = (config) => {
+  const matchers = config.map(([cfgs]) => matchSchemas(cfgs));
+  return (info) => {
+    const path = unwindPath(info.path);
+    const id = matchers.findIndex((m) => m(path));
+    if (id === -1) {
+      return {};
+    }
+    return config[id][1];
+  };
 };
 
 module.exports = {
   unwindPath,
   normalize,
+  append,
   matchSchema,
+  pickType,
 };

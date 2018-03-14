@@ -1,7 +1,9 @@
 const {
   unwindPath,
   normalize,
+  append,
   matchSchema,
+  pickType,
 } = require('../src/schema');
 
 describe('unwindPath', () => {
@@ -56,6 +58,24 @@ describe('normalize', () => {
     expect(normalize([[[['c']], { k: 1 }]])).toEqual([
       [[['c']], { k: 1 }],
     ]);
+  });
+
+  it('should throw wrong', () => {
+    expect(() => normalize([[{}, {}]])).toThrow();
+  });
+});
+
+describe('append', () => {
+  it('should append exist', () => {
+    const obj = { a: [1, 2] };
+    append(obj, 'a', 3);
+    expect(obj.a).toEqual([1, 2, 3]);
+  });
+
+  it('should append non-exist', () => {
+    const obj = {};
+    append(obj, 'a', 3);
+    expect(obj.a).toEqual([3]);
   });
 });
 
@@ -179,5 +199,44 @@ describe('matchSchema', () => {
     expect(func('a', 'b', 0, 1)).toEqual(false);
     expect(func('a', 'a')).toEqual(false);
     expect(func('a', 0, 'a', 1)).toEqual(false);
+  });
+});
+
+describe('pickType', () => {
+  it('should pick simple', () => {
+    const config = normalize([
+      ['a', { k: 1 }],
+      ['b', { k: 2 }],
+    ]);
+    expect(pickType(config)({ path: { key: 'a' } })).toBe(config[0][1]);
+  });
+
+  it('should pick dup', () => {
+    const config = normalize([
+      ['a', { k: 1 }],
+      ['a', { k: 2 }],
+    ]);
+    expect(pickType(config)({ path: { key: 'a' } })).toBe(config[0][1]);
+  });
+
+  it('should pick default', () => {
+    const config = normalize([
+      ['a', { k: 1 }],
+      ['b', { k: 2 }],
+    ]);
+    expect(pickType(config)({ path: { key: 'c' } })).toEqual({});
+  });
+
+  it('should pick either', () => {
+    const config = normalize([
+      [[['c'], ['a']], { k: 1 }],
+      ['a', { k: 2 }],
+    ]);
+    expect(pickType(config)({ path: { key: 'a' } })).toBe(config[0][1]);
+  });
+
+  it('should pick empty', () => {
+    const config = normalize([]);
+    expect(pickType(config)({ path: { key: 'a' } })).toEqual({});
   });
 });
