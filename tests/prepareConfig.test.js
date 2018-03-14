@@ -137,7 +137,7 @@ describe('prepareConfig', () => {
   it('should handle undefined', () => {
     const { root, config, pick } = prepareConfig();
     expect(root).toEqual({ _id: 0 });
-    expect(config).toEqual({ root: { _id: 0 } });
+    expect(config).toEqual({});
     expect(pick).toEqual({});
   });
 
@@ -153,12 +153,14 @@ describe('prepareConfig', () => {
     });
     expect(root).toEqual({});
     expect(config).toEqual({
-      root: {},
       Obj: [
         [[[null]], {
           prefix: 'x',
           proj: {
-            a: 'b',
+            a: {
+              query: 'b',
+              select: 'b',
+            },
           },
         }],
       ],

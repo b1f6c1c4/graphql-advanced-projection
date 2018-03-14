@@ -11,7 +11,7 @@ module.exports.genProjection = ({ root, pick }) => {
     logger.trace('Stripped returnType', type);
     const config = _.mapValues(pick, (p) => p(info));
     try {
-      return _.assign(root, makeProjection(
+      return _.assign({}, root, makeProjection(
         { config, info },
         context,
         '',

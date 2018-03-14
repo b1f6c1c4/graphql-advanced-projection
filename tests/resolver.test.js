@@ -19,9 +19,8 @@ describe('genResolvers', () => {
     }),
   }), query);
 
-  it('should accept simple', async (done) => {
+  it.only('should accept simple', async (done) => {
     const result = await run({
-      a: 'evil',
       Obj: {
         proj: {
           field1: 'x',
@@ -36,7 +35,6 @@ describe('genResolvers', () => {
 
   it('should accept complex 1', async (done) => {
     const result = await run({
-      a: 'evil',
       Evil: [
         ['obj', {
           proj: {
@@ -58,7 +56,6 @@ describe('genResolvers', () => {
 
   it('should accept complex 2', async (done) => {
     const result = await run({
-      a: 'evil',
       Evil: [
         ['obj', {
           proj: {

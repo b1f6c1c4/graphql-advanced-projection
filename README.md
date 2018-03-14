@@ -55,10 +55,14 @@ type User {
 
 ### Setup `graphql-advanced-projection`
 ```js
-const { genResolvers, genProjection } = require('graphql-advanced-projection');
+const {
+  prepareConfig,
+  genProjection,
+  genResolvers,
+} = require('graphql-advanced-projection');
 
 // Projection config
-const config = {
+const config = prepareConfig({
   User: {
     proj: {
       userId: '_id',
@@ -66,7 +70,7 @@ const config = {
       field2: null,
     },
   },
-};
+});
 const project = genProjection(config);
 const resolvers = genResolvers(config);
 ```

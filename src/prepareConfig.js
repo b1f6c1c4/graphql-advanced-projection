@@ -66,9 +66,12 @@ function prepareSchemaConfig(config) {
 
 function prepareConfig(configs = {}) {
   const root = configs.root || { _id: 0 };
-  const ncfgs = _.mapValues(configs, (config) =>
-    prepareSchemaConfig(config).map(([m, { proj, ...other }]) =>
-      [m, { proj: _.mapValues(proj, prepareProjectionConfig), ...other }]));
+  const ncfgs = _.chain(configs)
+    .pickBy((v, k) => /^[A-Z]/.test(k))
+    .mapValues((config) =>
+      prepareSchemaConfig(config).map(([m, { proj, ...other }]) =>
+        [m, { proj: _.mapValues(proj, prepareProjectionConfig), ...other }]))
+    .value();
   logger.info('Total config', ncfgs);
   return {
     root,

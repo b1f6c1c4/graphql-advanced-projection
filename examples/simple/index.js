@@ -3,9 +3,13 @@ const fs = require('fs');
 const path = require('path');
 const { makeExecutableSchema } = require('graphql-tools');
 const { User } = require('./models');
-const { genResolvers, genProjection } = require('../../');
+const {
+  prepareConfig,
+  genProjection,
+  genResolvers,
+} = require('../../');
 
-const config = {
+const config = prepareConfig({
   User: {
     proj: {
       userId: '_id',
@@ -13,7 +17,7 @@ const config = {
       field2: null,
     },
   },
-};
+});
 const project = genProjection(config);
 const resolvers = genResolvers(config);
 
