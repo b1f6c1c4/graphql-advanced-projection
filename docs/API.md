@@ -18,16 +18,39 @@ Example:
 
 # Config object
 
-If a key starts with capital character, it corresponds to a GraphQL type and the value MUST be a [type config](type-config-object).
+If a key starts with capital character, it corresponds to a GraphQL type and the value MUST be a [Schema config](schema-config).
 Otherwise, it's considered [global settings](global-settings).
 
 Example:
 ```js
 {
-  User: { /* type config for GraphQL type User */ },
-  TypeA: { /* type config for GraphQL type TypeA */ },
+  User: /* schema config for GraphQL type User */ {},
+  TypeA: /* schema config for GraphQL type TypeA */ [],
 }
 ```
+
+# Schema config
+
+- If it's an object `obj`, then it's equivalent to `[[{}, obj]]`.
+- Otherwise, it MUST be an array of pairs, each pair MUST have 2 elements:
+  - `[0]` - MUST be a [Match config](match-config).
+  - `[1]` - MUST be a [Type config object](type-config-object).
+  - When the schema config is used for projection or resolution, the match configs are tested sequentially.
+    The first one that matches the execution environment will be chosen for projection or resolution.
+  - If none of them matches, type config `{}` is used.
+
+# Match config
+
+- If it's undefined or missing, then it's equivalent to `[[null]]`.
+- If it's `null`, then it's equivalent to `[]`.
+- If it's a string `str`, then it's equivalent to `[[str, null]]`.
+- If it's an array of string `arr`, then it's equivalent to `[arr]`.
+- Otherwise, it MUST be of `[[null | String]]`:
+  - The whole config matches if and only if at least one `[null | String]` matches the path.
+  - `null` can match zero, one, or more path items.
+  - String MUST starts with an alphabet character:
+    - A string starts with a non-capital alphabet can match one path item (exactly match its key) and following numeric keys.
+    - A string starts with a capital alphabet can match one path item (exactly match its type) and previous array types.
 
 # Type config object
 
