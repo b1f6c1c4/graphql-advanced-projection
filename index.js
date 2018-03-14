@@ -1,12 +1,10 @@
-const _ = require('lodash');
-const genProjection = require('./src/projection');
-const genResolver = require('./src/resolver');
-
-const genResolvers = (configs) => _.mapValues(configs, genResolver);
+const { prepareConfig } = require('./src/prepareConfig');
+const { genProjection } = require('./src/projection');
+const { genResolvers } = require('./src/resolver');
 
 module.exports = {
-  default: genProjection,
+  default: prepareConfig,
+  prepareConfig,
   genProjection,
-  genResolver,
   genResolvers,
 };

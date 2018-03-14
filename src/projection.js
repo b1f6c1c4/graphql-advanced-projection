@@ -1,16 +1,9 @@
 const _ = require('lodash');
-const { normalize, pickType } = require('./schema');
-const validate = require('./validate');
 const { stripType, makeProjection } = require('./core');
 const logger = require('../logger');
 
-module.exports = (configs) => {
-  const root = configs.root || { _id: 0 };
-  const ncfgs = _.mapValues(configs, (config) =>
-    normalize(config).map(([m, { proj, ...other }]) =>
-      [m, { proj: _.mapValues(proj, validate), ...other }]));
-  logger.info('Total config', ncfgs);
-  const pick = _.mapValues(ncfgs, pickType);
+module.exports.genProjection = ({ root, pick }) => {
+  logger.trace('genProjection');
   return (info) => {
     const context = info.fieldNodes[0];
     logger.trace('returnType', info.returnType);

@@ -1,6 +1,6 @@
+const { prepareSchemaConfig } = require('../src/prepareConfig');
 const {
   unwindPath,
-  normalize,
   append,
   matchSchema,
   pickType,
@@ -15,53 +15,6 @@ describe('unwindPath', () => {
       },
       key: 'k2',
     })).toEqual(['k', 'k2']);
-  });
-});
-
-describe('normalize', () => {
-  it('should accept object', () => {
-    expect(normalize({ obj: true })).toEqual([[[[null]], { obj: true }]]);
-  });
-
-  it('should accept missing', () => {
-    // eslint-disable-next-line no-sparse-arrays
-    expect(normalize([[, { k: 1 }]])).toEqual([
-      [[[null]], { k: 1 }],
-    ]);
-  });
-
-  it('should accept undefined', () => {
-    expect(normalize([[undefined, { k: 1 }]])).toEqual([
-      [[[null]], { k: 1 }],
-    ]);
-  });
-
-  it('should accept null', () => {
-    expect(normalize([[null, { k: 1 }]])).toEqual([
-      [[], { k: 1 }],
-    ]);
-  });
-
-  it('should accept string', () => {
-    expect(normalize([['aa', { k: 1 }]])).toEqual([
-      [[['aa', null]], { k: 1 }],
-    ]);
-  });
-
-  it('should accept array', () => {
-    expect(normalize([[['a', 'b'], { k: 1 }]])).toEqual([
-      [[['a', 'b']], { k: 1 }],
-    ]);
-  });
-
-  it('should accept regular', () => {
-    expect(normalize([[[['c']], { k: 1 }]])).toEqual([
-      [[['c']], { k: 1 }],
-    ]);
-  });
-
-  it('should throw wrong', () => {
-    expect(() => normalize([[{}, {}]])).toThrow();
   });
 });
 
@@ -204,7 +157,7 @@ describe('matchSchema', () => {
 
 describe('pickType', () => {
   it('should pick simple', () => {
-    const config = normalize([
+    const config = prepareSchemaConfig([
       ['a', { k: 1 }],
       ['b', { k: 2 }],
     ]);
@@ -212,7 +165,7 @@ describe('pickType', () => {
   });
 
   it('should pick dup', () => {
-    const config = normalize([
+    const config = prepareSchemaConfig([
       ['a', { k: 1 }],
       ['a', { k: 2 }],
     ]);
@@ -220,7 +173,7 @@ describe('pickType', () => {
   });
 
   it('should pick default', () => {
-    const config = normalize([
+    const config = prepareSchemaConfig([
       ['a', { k: 1 }],
       ['b', { k: 2 }],
     ]);
@@ -228,7 +181,7 @@ describe('pickType', () => {
   });
 
   it('should pick either', () => {
-    const config = normalize([
+    const config = prepareSchemaConfig([
       [[['c'], ['a']], { k: 1 }],
       ['a', { k: 2 }],
     ]);
@@ -236,7 +189,7 @@ describe('pickType', () => {
   });
 
   it('should pick empty', () => {
-    const config = normalize([]);
+    const config = prepareSchemaConfig([]);
     expect(pickType(config)({ path: { key: 'a' } })).toEqual({});
   });
 });

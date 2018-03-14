@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const { graphql } = require('graphql');
 const { makeExecutableSchema } = require('graphql-tools');
-
-const genProjection = require('../src/projection');
+const { prepareConfig } = require('../src/prepareConfig');
+const { genProjection } = require('../src/projection');
 
 describe('genProjection', () => {
   const typeDefs = fs.readFileSync(path.join(__dirname, 'schema.graphql'), 'utf-8');
@@ -11,7 +11,7 @@ describe('genProjection', () => {
   const run = (config, query) => new Promise((resolve, reject) => {
     const go = (info) => {
       try {
-        const proj = genProjection(config);
+        const proj = genProjection(prepareConfig(config));
         resolve(proj(info));
       } catch (e) {
         reject(e);
