@@ -27,6 +27,16 @@ describe('genProjection', () => {
     });
   });
 
+  it('should return undefined if error', () => {
+    expect.hasAssertions();
+    const evil = {
+      get Obj() {
+        throw new Error();
+      },
+    };
+    return expect(run(evil, '{ obj { field1 } }')).resolves.toBeUndefined();
+  });
+
   it('should project default when not configured', () => {
     expect.hasAssertions();
     return expect(run({}, '{ obj { field1 } }')).resolves.toEqual({
