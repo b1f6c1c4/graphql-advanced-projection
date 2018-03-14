@@ -9,6 +9,20 @@ const stripType = (typeRef) => {
   return typeRef.name;
 };
 
+const makePrefix = (prev, cur, subs) => {
+  let curr = cur;
+  if (curr === undefined) {
+    curr = subs;
+  }
+  if (!curr) {
+    return prev;
+  }
+  if (curr.startsWith('.')) {
+    return curr.substr(1);
+  }
+  return prev + curr;
+};
+
 function gen(
   root,
   context,
@@ -23,10 +37,7 @@ function gen(
     cfg = {};
   }
   const result = {};
-  const thisPrefix = cfg.prefix || '';
-  const pf = thisPrefix.startsWith('.')
-    ? prefix + thisPrefix.substr(1)
-    : thisPrefix;
+  const pf = makePrefix(prefix, cfg.prefix);
   const proj = (reason, k) => {
     if (_.isArray(k)) {
       k.forEach((v) => {
@@ -77,7 +88,7 @@ function gen(
           logger.trace('nextTypeRef', nextTypeRef.toString());
           const core = stripType(nextTypeRef);
           logger.trace('Recursive', core);
-          _.assign(result, gen(root, sel, pf, core));
+          _.assign(result, gen(root, sel, makePrefix(pf, def.prefix, `${sel.name.value}.`), core));
         }
         return;
       }
