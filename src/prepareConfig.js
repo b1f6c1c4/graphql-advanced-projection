@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const _ = require('lodash/fp');
 const { pickType } = require('./schema');
 const logger = require('../logger');
 
@@ -66,17 +66,23 @@ function prepareSchemaConfig(config) {
 
 function prepareConfig(configs = {}) {
   const root = configs.root || { _id: 0 };
-  const ncfgs = _.chain(configs)
-    .pickBy((v, k) => /^[A-Z]/.test(k))
-    .mapValues((config) =>
-      prepareSchemaConfig(config).map(([m, { proj, ...other }]) =>
-        [m, { proj: _.mapValues(proj, prepareProjectionConfig), ...other }]))
-    .value();
+  const ncfgs = _.compose(
+    _.mapValues(
+      _.compose(
+        _.map,
+        _.update('[1].proj'),
+        _.mapValues,
+      )(prepareProjectionConfig),
+    ),
+    _.cloneDeep,
+    _.mapValues(prepareSchemaConfig),
+    _.pickBy((v, k) => /^[A-Z]/.test(k)),
+  )(configs);
   logger.info('Total config', ncfgs);
   return {
     root,
     config: ncfgs,
-    pick: _.mapValues(ncfgs, pickType),
+    pick: _.mapValues(pickType)(ncfgs),
   };
 }
 

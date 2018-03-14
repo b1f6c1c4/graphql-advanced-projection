@@ -28,13 +28,9 @@ function makeProjection(
   prefix,
   type,
 ) {
-  const { config, info } = root;
+  const { pick, info } = root;
   logger.debug('Projecting type', type);
-  let cfg = config[type];
-  if (!cfg) {
-    logger.debug('Type not found, default everywhere', type);
-    cfg = {};
-  }
+  const cfg = (pick[type] || _.constant({}))(info);
   const result = {};
   const pf = makePrefix(prefix, cfg.prefix);
   const proj = (reason, k) => {

@@ -1,3 +1,4 @@
+const _ = require('lodash/fp');
 const fs = require('fs');
 const path = require('path');
 const { graphql } = require('graphql');
@@ -8,10 +9,11 @@ describe('makeProjection', () => {
   const typeDefs = fs.readFileSync(path.join(__dirname, 'schema.graphql'), 'utf-8');
 
   const run = (config, query) => new Promise((resolve, reject) => {
+    const pick = _.mapValues(_.constant)(config);
     const go = (info) => {
       try {
         const proj = makeProjection(
-          { config, info },
+          { pick, info },
           info.fieldNodes[0],
           '',
           stripType(info.returnType),
