@@ -8,15 +8,10 @@ const { genResolvers, genProjection } = require('../../');
 const config = {
   User: {
     proj: {
-      alters: {
-        query: null,
-        select: 'nested',
-        recursive: true,
-      },
+      alters: 'nested.',
     },
   },
   ExtraInfo: {
-    prefix: 'nested.',
     proj: {
       field3: 'mongoC',
     },

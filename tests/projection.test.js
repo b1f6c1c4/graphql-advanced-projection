@@ -186,6 +186,27 @@ describe('genProjection', () => {
       },
     }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
       _id: 0,
+      'wrap.wrap2.foo': 1,
+    });
+  });
+
+  it('should project nested absolute', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        prefix: 'wrap.',
+        proj: {
+          field2: true,
+        },
+      },
+      Foo: {
+        prefix: '.wrap2.',
+        proj: {
+          f1: 'foo',
+        },
+      },
+    }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
+      _id: 0,
       'wrap2.foo': 1,
     });
   });
@@ -255,7 +276,7 @@ describe('genProjection', () => {
     }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
       _id: 0,
       'wrap.wrap2': 1,
-      'wrap2.foo': 1,
+      'wrap.wrap2.foo': 1,
     });
   });
 
@@ -370,7 +391,7 @@ fragment f on Obj {
       _id: 0,
       'wrap.type': 1,
       'wrap.value': 1,
-      'wrap2.value2': 1,
+      'wrap.wrap2.value2': 1,
     });
   });
 
@@ -409,7 +430,7 @@ fragment f on Child {
       _id: 0,
       'wrap.type': 1,
       'wrap.value': 1,
-      'wrap2.value2': 1,
+      'wrap.wrap2.value2': 1,
     });
   });
 
@@ -468,7 +489,7 @@ fragment f on Child {
     expect.hasAssertions();
     return expect(run({
       Evil: {
-        prefix: '.x.',
+        prefix: 'x.',
         proj: {
           self: true,
         },
