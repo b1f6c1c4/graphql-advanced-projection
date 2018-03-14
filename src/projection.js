@@ -94,16 +94,22 @@ function gen(
       }
       case 'InlineFragment': {
         logger.debug('Projecting inline fragment');
-        const core = _.get(sel, 'typeCondition.name.value') || type;
-        logger.trace('Recursive', core);
-        _.assign(result, gen(root, sel, pf, core));
+        const newType = _.get(sel, 'typeCondition.name.value');
+        const core = newType || type;
+        const newPrefix = newType ? pf : prefix;
+        logger.trace('Recursive', { type: core, prefix: newPrefix });
+        _.assign(result, gen(root, sel, newPrefix, core));
         return;
       }
-      case 'FragmentSpread':
+      case 'FragmentSpread': {
         logger.debug('Projecting fragment', sel.name.value);
-        logger.trace('Recursive', sel.name.value);
-        _.assign(result, gen(root, info.fragments[sel.name.value], pf));
+        const frag = info.fragments[sel.name.value];
+        const newType = _.get(frag, 'typeCondition.name.value');
+        const newPrefix = newType !== type ? pf : prefix;
+        logger.trace('Recursive', { type: newType, prefix: newPrefix });
+        _.assign(result, gen(root, info.fragments[sel.name.value], newPrefix));
         return;
+      }
       /* istanbul ignore next */
       default:
         /* istanbul ignore next */

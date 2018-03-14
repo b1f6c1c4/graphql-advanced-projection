@@ -438,6 +438,52 @@ fragment h on Obj {
     });
   });
 
+  it('should project deep inline fragment with typeCondition', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        proj: {
+          field3: {
+            query: null,
+            recursive: true,
+            prefix: 'evil.',
+          },
+        },
+      },
+      Father: {
+        prefix: 'wrap.',
+        typeProj: 'type',
+        proj: {
+          g0: { query: 'value' },
+        },
+      },
+      Child: {
+        prefix: 'wrap2.',
+        proj: {
+          g1: { query: 'value2' },
+        },
+      },
+    }, `{
+  obj {
+    field3 {
+      g0
+      ... on Child {
+        ... {
+          ... on Child {
+            g1
+          }
+        }
+      }
+    }
+  }
+}`)).resolves.toEqual({
+      _id: 0,
+      'evil.wrap.type': 1,
+      'evil.wrap.value': 1,
+      'evil.wrap.wrap2.wrap2.value2': 1,
+    });
+  });
+
   it('should project inline fragment with typeCondition partial', () => {
     expect.hasAssertions();
     return expect(run({
