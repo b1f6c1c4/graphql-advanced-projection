@@ -42,6 +42,8 @@ describe('matchSchema', () => {
     expect(func('a', 'b', 0, 1)).toEqual(false);
     expect(func('a', 'a')).toEqual(false);
     expect(func('a', 0, 'a', 1)).toEqual(false);
+    expect(func(2)).toEqual(false);
+    expect(func(2, 'a')).toEqual(false);
   });
 
   it('should match simple', () => {
@@ -53,6 +55,8 @@ describe('matchSchema', () => {
     expect(func('a', 'b', 0, 1)).toEqual(false);
     expect(func('a', 'a')).toEqual(false);
     expect(func('a', 0, 'a', 1)).toEqual(false);
+    expect(func(2)).toEqual(false);
+    expect(func(2, 'a')).toEqual(false);
   });
 
   it('should match null', () => {
@@ -64,6 +68,8 @@ describe('matchSchema', () => {
     expect(func('a', 'b', 0, 1)).toEqual(true);
     expect(func('a', 'a')).toEqual(true);
     expect(func('a', 0, 'a', 1)).toEqual(true);
+    expect(func(2)).toEqual(true);
+    expect(func(2, 'a')).toEqual(true);
   });
 
   it('should match null simple', () => {
@@ -75,6 +81,8 @@ describe('matchSchema', () => {
     expect(func('a', 'b', 0, 1)).toEqual(true);
     expect(func('a', 'a')).toEqual(false);
     expect(func('a', 0, 'a', 1)).toEqual(false);
+    expect(func(2)).toEqual(false);
+    expect(func(2, 'a')).toEqual(false);
   });
 
   it('should match simple null', () => {
@@ -86,6 +94,8 @@ describe('matchSchema', () => {
     expect(func('a', 'b', 0, 1)).toEqual(true);
     expect(func('a', 'a')).toEqual(true);
     expect(func('a', 0, 'a', 1)).toEqual(true);
+    expect(func(2)).toEqual(false);
+    expect(func(2, 'a')).toEqual(false);
   });
 
   it('should match simple dup', () => {
@@ -97,6 +107,8 @@ describe('matchSchema', () => {
     expect(func('a', 'b', 0, 1)).toEqual(false);
     expect(func('a', 'a')).toEqual(true);
     expect(func('a', 0, 'a', 1)).toEqual(true);
+    expect(func(2)).toEqual(false);
+    expect(func(2, 'a')).toEqual(false);
   });
 
   it('should match simple simple', () => {
@@ -108,6 +120,8 @@ describe('matchSchema', () => {
     expect(func('a', 'b', 0, 1)).toEqual(true);
     expect(func('a', 'a')).toEqual(false);
     expect(func('a', 0, 'a', 1)).toEqual(false);
+    expect(func(2)).toEqual(false);
+    expect(func(2, 'a')).toEqual(false);
   });
 
   it('should match null simple simple', () => {
@@ -119,6 +133,8 @@ describe('matchSchema', () => {
     expect(func('a', 'b', 0, 1)).toEqual(true);
     expect(func('a', 'a')).toEqual(false);
     expect(func('a', 0, 'a', 1)).toEqual(false);
+    expect(func(2)).toEqual(false);
+    expect(func(2, 'a')).toEqual(false);
   });
 
   it('should match simple null simple', () => {
@@ -130,6 +146,8 @@ describe('matchSchema', () => {
     expect(func('a', 'b', 0, 1)).toEqual(true);
     expect(func('a', 'a')).toEqual(false);
     expect(func('a', 0, 'a', 1)).toEqual(false);
+    expect(func(2)).toEqual(false);
+    expect(func(2, 'a')).toEqual(false);
   });
 
   it('should match null null', () => {
@@ -141,6 +159,8 @@ describe('matchSchema', () => {
     expect(func('a', 'b', 0, 1)).toEqual(true);
     expect(func('a', 'a')).toEqual(true);
     expect(func('a', 0, 'a', 1)).toEqual(true);
+    expect(func(2)).toEqual(true);
+    expect(func(2, 'a')).toEqual(true);
   });
 
   it('should match wrong simple', () => {
@@ -152,6 +172,60 @@ describe('matchSchema', () => {
     expect(func('a', 'b', 0, 1)).toEqual(false);
     expect(func('a', 'a')).toEqual(false);
     expect(func('a', 0, 'a', 1)).toEqual(false);
+    expect(func(2)).toEqual(false);
+    expect(func(2, 'a')).toEqual(false);
+  });
+
+  it('should match empty', () => {
+    const func = (...args) => matchSchema([''])(args);
+    expect(func()).toEqual(false);
+    expect(func('a')).toEqual(true);
+    expect(func('a', 'b')).toEqual(false);
+    expect(func('a', 0, 1)).toEqual(true);
+    expect(func('a', 'b', 0, 1)).toEqual(false);
+    expect(func('a', 'a')).toEqual(false);
+    expect(func('a', 0, 'a', 1)).toEqual(false);
+    expect(func(2)).toEqual(false);
+    expect(func(2, 'a')).toEqual(false);
+  });
+
+  it('should match empty empty', () => {
+    const func = (...args) => matchSchema(['', ''])(args);
+    expect(func()).toEqual(false);
+    expect(func('a')).toEqual(false);
+    expect(func('a', 'b')).toEqual(true);
+    expect(func('a', 0, 1)).toEqual(false);
+    expect(func('a', 'b', 0, 1)).toEqual(true);
+    expect(func('a', 'a')).toEqual(true);
+    expect(func('a', 0, 'a', 1)).toEqual(true);
+    expect(func(2)).toEqual(false);
+    expect(func(2, 'a')).toEqual(false);
+  });
+
+  it('should match opt empty', () => {
+    const func = (...args) => matchSchema(['?'])(args);
+    expect(func()).toEqual(true);
+    expect(func('a')).toEqual(true);
+    expect(func('a', 'b')).toEqual(false);
+    expect(func('a', 0, 1)).toEqual(true);
+    expect(func('a', 'b', 0, 1)).toEqual(false);
+    expect(func('a', 'a')).toEqual(false);
+    expect(func('a', 0, 'a', 1)).toEqual(false);
+    expect(func(2)).toEqual(false);
+    expect(func(2, 'a')).toEqual(false);
+  });
+
+  it('should match opt', () => {
+    const func = (...args) => matchSchema(['a?', 'a'])(args);
+    expect(func()).toEqual(false);
+    expect(func('a')).toEqual(true);
+    expect(func('a', 'b')).toEqual(false);
+    expect(func('a', 0, 1)).toEqual(true);
+    expect(func('a', 'b', 0, 1)).toEqual(false);
+    expect(func('a', 'a')).toEqual(true);
+    expect(func('a', 0, 'a', 1)).toEqual(true);
+    expect(func(2)).toEqual(false);
+    expect(func(2, 'a')).toEqual(false);
   });
 });
 

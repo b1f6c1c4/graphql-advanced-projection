@@ -48,7 +48,10 @@ Example:
 - Otherwise, it MUST be of `[[null | String]]`:
   - The whole config matches if and only if at least one `[null | String]` matches the path.
   - `null` can match zero, one, or more path items.
-  - A string can match one path item (exactly match its key) and following numeric keys.
+  - `''` can match one path item (not numeric) and following numeric keys.
+  - `'?'` can match nothing or (one path item (not numeric) and following numeric keys).
+  - A string with suffix `'?'` can match nothing or (one path item (exactly match its key) and following numeric keys).
+  - Otherwise, a string can match one path item (exactly match its key) and following numeric keys.
 
 # Type config object
 

@@ -19,6 +19,7 @@ function unwindPath(path) {
  *   {
  *     [EPSILON]: [Number],
  *     [ANY]: [Number],
+ *     [NOTNUMBER]: [Number],
  *     [NUMBER]: [Number],
  *     key: [Number],
  *     [ACCEPT]: true | false,
@@ -29,6 +30,7 @@ function unwindPath(path) {
 
 const EPSILON = Symbol('epsilon');
 const ANY = Symbol('any');
+const NOTNUMBER = Symbol('not-number');
 const NUMBER = Symbol('number');
 const ACCEPT = Symbol('accept');
 
@@ -53,15 +55,18 @@ const run = (NFA) => _.compose(
       extend(NFA),
       _.reduce((next, state) => {
         const cfg = NFA[state];
-        if (cfg[ANY]) {
-          next.add(...cfg[ANY]);
+        const mer = (k) => {
+          if (cfg[k]) {
+            next.add(...cfg[k]);
+          }
+        };
+        mer(ANY);
+        if (_.isNumber(char)) {
+          mer(NUMBER);
+        } else {
+          mer(NOTNUMBER);
         }
-        if (_.isNumber(char) && cfg[NUMBER]) {
-          next.add(...cfg[NUMBER]);
-        }
-        if (cfg[char]) {
-          next.add(...cfg[char]);
-        }
+        mer(char);
         return next;
       })(new Set()),
     )(states)),
@@ -90,10 +95,24 @@ const appendExact = (NFA, str) => {
   NFA.push({ [NUMBER]: [len] });
 };
 
+const appendExactOrNothing = (NFA, str) => {
+  const len = NFA.length;
+  append(NFA[len - 1], str, len);
+  append(NFA[len - 1], EPSILON, len + 1);
+  NFA.push({ [NUMBER]: [len], [EPSILON]: [len + 1] });
+  NFA.push({});
+};
+
 const matchSchema = (cfg) => {
   const NFA = _.reduce((n, c) => {
     if (c === null) {
       appendAny(n);
+    } else if (c === '') {
+      appendExact(n, NOTNUMBER);
+    } else if (c === '?') {
+      appendExactOrNothing(n, NOTNUMBER);
+    } else if (c.endsWith('?')) {
+      appendExactOrNothing(n, c.substr(0, c.length - 1));
     } else {
       appendExact(n, c);
     }
