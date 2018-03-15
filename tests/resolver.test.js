@@ -74,4 +74,25 @@ describe('genResolvers', () => {
     expect(result).toEqual({ data: { evil: { field: 'xxx' } } });
     done();
   });
+
+  it('should accept complex 3', async (done) => {
+    const result = await run({
+      Evil: [
+        ['obj', {
+          proj: {
+            field: 'x',
+          },
+        }],
+        ['evil', {
+          proj: {
+            field: null,
+          },
+        }],
+      ],
+    }, '{ evil { field } }', {
+      evil: { field: 'xxx' },
+    });
+    expect(result).toEqual({ data: { evil: { field: 'xxx' } } });
+    done();
+  });
 });

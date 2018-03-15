@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const _ = require('lodash/fp');
 
 function unwindPath(path) {
   const result = [];
@@ -32,7 +32,7 @@ const ANY = Symbol('any');
 const NUMBER = Symbol('number');
 const ACCEPT = Symbol('accept');
 
-const extend = (NFA, states) => {
+const extend = (NFA) => (states) => {
   const extended = new Set();
   const queue = [...states];
   while (queue.length) {
@@ -43,35 +43,31 @@ const extend = (NFA, states) => {
       queue.push(...cfg[EPSILON]);
     }
   }
-  return extended;
+  return [...extended];
 };
 
-const run = (NFA, input) => {
-  let states = extend(NFA, new Set([0]));
-  for (let id = 0; id < input.length; id += 1) {
-    const char = input[id];
-    const next = new Set();
-    states.forEach((state) => {
-      const cfg = NFA[state];
-      if (cfg[ANY]) {
-        next.add(...cfg[ANY]);
-      }
-      if (_.isNumber(char) && cfg[NUMBER]) {
-        next.add(...cfg[NUMBER]);
-      }
-      if (cfg[char]) {
-        next.add(...cfg[char]);
-      }
-    });
-    if (!next.size) {
-      return false;
-    }
-    states = extend(NFA, next);
-  }
-  let accept = false;
-  states.forEach((state) => { accept = accept || NFA[state][ACCEPT]; });
-  return !!accept;
-};
+const run = (NFA) => _.compose(
+  _.some((state) => NFA[state][ACCEPT]),
+  _.compose(
+    _.reduce((states, char) => _.compose(
+      extend(NFA),
+      _.reduce((next, state) => {
+        const cfg = NFA[state];
+        if (cfg[ANY]) {
+          next.add(...cfg[ANY]);
+        }
+        if (_.isNumber(char) && cfg[NUMBER]) {
+          next.add(...cfg[NUMBER]);
+        }
+        if (cfg[char]) {
+          next.add(...cfg[char]);
+        }
+        return next;
+      })(new Set()),
+    )(states)),
+    extend(NFA),
+  )(new Set([0])),
+);
 
 const append = (obj, key, val) => {
   if (obj[key]) {
@@ -95,31 +91,41 @@ const appendExact = (NFA, str) => {
 };
 
 const matchSchema = (cfg) => {
-  const NFA = [{}];
-  cfg.forEach((c) => {
+  const NFA = _.reduce((n, c) => {
     if (c === null) {
-      appendAny(NFA);
+      appendAny(n);
     } else {
-      appendExact(NFA, c);
+      appendExact(n, c);
     }
-  });
+    return n;
+  })([{}])(cfg);
   NFA[NFA.length - 1][ACCEPT] = true;
-  return (path) => run(NFA, path);
+  return run(NFA);
 };
 
-const matchSchemas = (cfgs) => {
-  const ms = cfgs.map(matchSchema);
-  return (path) => ms.some((m) => m(path));
-};
+const matchSchemas = _.compose(
+  _.overSome,
+  _.map(matchSchema),
+);
 
 const pickType = (config) => {
   if (!_.isArray(config)) {
     return _.constant(config);
   }
-  const matchers = config.map(([cfgs]) => matchSchemas(cfgs));
+  const matchers = _.compose(
+    _.over,
+    _.map(_.compose(
+      matchSchemas,
+      _.get('0'),
+    )),
+  )(config);
   return (info) => {
-    const path = unwindPath(info.path);
-    const id = matchers.findIndex((m) => m(path));
+    const id = _.compose(
+      _.findIndex(_.identity),
+      matchers,
+      unwindPath,
+      _.get('path'),
+    )(info);
     if (id === -1) {
       return {};
     }
