@@ -3,13 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const { makeExecutableSchema } = require('graphql-tools');
 const { User, Item } = require('./models');
-const {
-  prepareConfig,
-  genProjection,
-  genResolvers,
-} = require('../../');
+const gqlProjection = require('../../');
 
-const config = prepareConfig({
+const { project, resolvers } = gqlProjection({
   User: {
     proj: {
       items: true,
@@ -30,8 +26,6 @@ const config = prepareConfig({
     }],
   ],
 });
-const project = genProjection(config);
-const resolvers = genResolvers(config);
 
 module.exports = makeExecutableSchema({
   typeDefs: fs.readFileSync(path.join(__dirname, 'schema.graphql'), 'utf-8'),

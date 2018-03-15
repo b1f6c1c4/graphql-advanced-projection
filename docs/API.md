@@ -8,11 +8,13 @@ Example:
 - `'items.0.value'` - get a value in an array.
 
 # Exported functions
+- `gqlProjection (default): (config) => { project, resolvers }`
+  - Shorthand for calling the the following functions.
+- `prepareConfig: (config) => config`
 - `genProjection: (config) => (info) => result`
   - `info` is the 4th argument of a resolver function.
   - `result` is undefined if error occured.
   - `result` is an object with Path as keys and `1` or `0` as value.
-  - `result._id` always exists.
 - `genResolvers: (config) => resolvers`
   - `resolvers` is of valid GraphQL resolver format. SHOULD be used with [`graphql-tools/makeExecutableSchema`](https://github.com/apollographql/graphql-tools).
 

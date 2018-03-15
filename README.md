@@ -33,6 +33,7 @@ $ yarn add graphql-advanced-projection
 > For a complete working demo, see the `examples` folder.
 
 ### Setup `mongoose`
+
 ```js
 const UserSchema = new mongoose.Schema({
   _id: String,
@@ -42,6 +43,7 @@ const User = mongoose.model('users', UserSchema);
 ```
 
 ### Setup `graphql`
+
 ```graphql
 type Query {
   user(id: ID!): User
@@ -54,15 +56,9 @@ type User {
 ```
 
 ### Setup `graphql-advanced-projection`
-```js
-const {
-  prepareConfig,
-  genProjection,
-  genResolvers,
-} = require('graphql-advanced-projection');
 
-// Projection config
-const config = prepareConfig({
+```js
+const { project, resolvers } = gqlProjection({
   User: {
     proj: {
       userId: '_id',
@@ -71,16 +67,11 @@ const config = prepareConfig({
     },
   },
 });
-const project = genProjection(config);
-const resolvers = genResolvers(config);
 ```
 
 ### Combine everything together
 
 ```js
-const _ = require('lodash');
-const { makeExecutableSchema } = require('graphql-tools');
-
 module.exports = makeExecutableSchema({
   typeDefs,
   resolvers: _.merge(resolvers, {
