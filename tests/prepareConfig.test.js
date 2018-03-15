@@ -88,7 +88,7 @@ describe('prepareProjectionConfig', () => {
 
 describe('prepareSchemaConfig', () => {
   it('should accept object', () => {
-    expect(prepareSchemaConfig({ obj: true })).toEqual([[[[null]], { obj: true }]]);
+    expect(prepareSchemaConfig({ obj: true })).toEqual({ obj: true });
   });
 
   it('should accept missing', () => {
@@ -153,17 +153,15 @@ describe('prepareConfig', () => {
     });
     expect(root).toEqual({});
     expect(config).toEqual({
-      Obj: [
-        [[[null]], {
-          prefix: 'x',
-          proj: {
-            a: {
-              query: 'b',
-              select: 'b',
-            },
+      Obj: {
+        prefix: 'x',
+        proj: {
+          a: {
+            query: 'b',
+            select: 'b',
           },
-        }],
-      ],
+        },
+      },
     });
     expect(pick.Obj({})).toEqual({
       prefix: 'x',

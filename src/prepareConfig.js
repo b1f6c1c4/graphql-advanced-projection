@@ -59,22 +59,27 @@ function prepareSchemaConfig(config) {
     return cfg;
   };
   if (_.isArray(config)) {
-    return config.map(([m, t]) => [norm(m), t]);
+    return config.map(([m, t]) => [norm(m), _.cloneDeep(t)]);
   }
-  return [[[[null]], config]];
+  return _.cloneDeep(config);
 }
 
 function prepareConfig(configs = {}) {
   const root = configs.root || { _id: 0 };
   const ncfgs = _.compose(
     _.mapValues(
-      _.compose(
-        _.map,
-        _.update('[1].proj'),
-        _.mapValues,
-      )(prepareProjectionConfig),
+      (v) => (_.isArray(v)
+        ? _.compose(
+          _.map,
+          _.update('[1].proj'),
+          _.mapValues,
+        )
+        : _.compose(
+          _.update('proj'),
+          _.mapValues,
+        )
+      )(prepareProjectionConfig)(v),
     ),
-    _.cloneDeep,
     _.mapValues(prepareSchemaConfig),
     _.pickBy((v, k) => /^[A-Z]/.test(k)),
   )(configs);

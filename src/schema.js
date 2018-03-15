@@ -113,6 +113,9 @@ const matchSchemas = (cfgs) => {
 };
 
 const pickType = (config) => {
+  if (!_.isArray(config)) {
+    return _.constant(config);
+  }
   const matchers = config.map(([cfgs]) => matchSchemas(cfgs));
   return (info) => {
     const path = unwindPath(info.path);

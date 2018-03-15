@@ -156,12 +156,17 @@ describe('matchSchema', () => {
 });
 
 describe('pickType', () => {
+  it('should pick object', () => {
+    const config = prepareSchemaConfig({ k: 1 });
+    expect(pickType(config)()).toEqual(config);
+  });
+
   it('should pick simple', () => {
     const config = prepareSchemaConfig([
       ['a', { k: 1 }],
       ['b', { k: 2 }],
     ]);
-    expect(pickType(config)({ path: { key: 'a' } })).toBe(config[0][1]);
+    expect(pickType(config)({ path: { key: 'a' } })).toEqual(config[0][1]);
   });
 
   it('should pick dup', () => {
@@ -169,7 +174,7 @@ describe('pickType', () => {
       ['a', { k: 1 }],
       ['a', { k: 2 }],
     ]);
-    expect(pickType(config)({ path: { key: 'a' } })).toBe(config[0][1]);
+    expect(pickType(config)({ path: { key: 'a' } })).toEqual(config[0][1]);
   });
 
   it('should pick default', () => {
@@ -185,7 +190,7 @@ describe('pickType', () => {
       [[['c'], ['a']], { k: 1 }],
       ['a', { k: 2 }],
     ]);
-    expect(pickType(config)({ path: { key: 'a' } })).toBe(config[0][1]);
+    expect(pickType(config)({ path: { key: 'a' } })).toEqual(config[0][1]);
   });
 
   it('should pick empty', () => {
