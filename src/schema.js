@@ -1,4 +1,5 @@
 const _ = require('lodash/fp');
+const logger = require('../logger');
 
 function unwindPath(path) {
   const result = [];
@@ -119,6 +120,7 @@ const matchSchema = (cfg) => {
     return n;
   })([{}])(cfg);
   NFA[NFA.length - 1][ACCEPT] = true;
+  logger.info('NFA', NFA);
   return run(NFA);
 };
 

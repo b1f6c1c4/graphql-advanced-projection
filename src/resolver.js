@@ -2,7 +2,6 @@ const _ = require('lodash/fp');
 const logger = require('../logger');
 
 function makeResolver(configs, pick) {
-  logger.trace('makeResolver', configs);
   let fn;
   if (!_.isArray(configs)) {
     fn = _.compose(
@@ -25,13 +24,12 @@ function makeResolver(configs, pick) {
     );
   }
   const res = fn(configs);
-  logger.trace('Generated resolver', _.keys(res));
   return res;
 }
 
 const genResolvers = ({ config, pick }) => {
   const result = _.mergeWith(makeResolver)(config, pick);
-  logger.info('Resolvers', _.mapValues(_.keys)(result));
+  logger.info('Resolvers', result);
   return result;
 };
 

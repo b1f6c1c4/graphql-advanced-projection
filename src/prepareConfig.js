@@ -83,7 +83,7 @@ function prepareConfig(configs = {}) {
     _.mapValues(prepareSchemaConfig),
     _.pickBy((v, k) => /^[A-Z]/.test(k)),
   )(configs);
-  logger.info('Total config', ncfgs);
+  logger.info(`Total config: ${JSON.stringify(ncfgs, null, 2)}`);
   return {
     root,
     config: ncfgs,
