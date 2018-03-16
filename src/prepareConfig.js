@@ -2,6 +2,25 @@ const _ = require('lodash/fp');
 const { pickType } = require('./schema');
 const logger = require('../logger');
 
+function preparePipelineConfig(ref, fieldName, query) {
+  if (!ref) {
+    return undefined;
+  }
+  if (_.isString(ref)) {
+    return preparePipelineConfig({ from: ref }, fieldName, query);
+  }
+  const { from, localField, foreignField, as } = ref;
+  if (!localField && query === null) {
+    throw new Error('Either use localField or use non-null query');
+  }
+  return {
+    from: from || fieldName,
+    localField: localField || query,
+    foreignField: foreignField || '_id',
+    as: as || `__${fieldName}__`,
+  };
+}
+
 function prepareProjectionConfig(def, fieldName) {
   if (def === undefined) {
     return { query: fieldName };
@@ -31,11 +50,17 @@ function prepareProjectionConfig(def, fieldName) {
       query: def,
     };
   }
+  const query = def.query === undefined ? fieldName : def.query;
+  const reference = preparePipelineConfig(def.reference, fieldName, query);
+  if (reference && def.select) {
+    throw new Error('reference MUST be used with select: undefined');
+  }
   return {
-    query: def.query === undefined ? fieldName : def.query,
-    select: def.select,
+    query,
+    select: reference ? reference.as : def.select,
     recursive: def.recursive ? true : undefined,
     prefix: def.prefix,
+    reference,
   };
 }
 
@@ -92,6 +117,7 @@ function prepareConfig(configs = {}) {
 }
 
 module.exports = {
+  preparePipelineConfig,
   prepareProjectionConfig,
   prepareSchemaConfig,
   prepareConfig,
