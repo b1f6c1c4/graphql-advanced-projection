@@ -61,7 +61,7 @@ const makeProjection = makeTraverser({
   },
   stepFunc({ config, field, type, next }, [prefix], recursion) {
     logger.debug('Projecting (inline) fragment', field);
-    const newPrefix = type === next
+    const newPrefix = type.name === next.name
       ? prefix
       : makePrefix(prefix, config.prefix);
     return recursion([newPrefix]);
