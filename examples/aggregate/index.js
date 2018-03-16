@@ -8,7 +8,13 @@ const gqlProjection = require('../../');
 const { pipeline, resolvers } = gqlProjection({
   User: {
     proj: {
-      items: { query: 'itemsId', reference: 'items' },
+      items: {
+        query: null,
+        reference: {
+          from: 'items',
+          localField: 'itemsId',
+        },
+      },
     },
   },
   Item: {
@@ -29,7 +35,7 @@ module.exports = makeExecutableSchema({
           { $match: { _id: args.id } },
           ...pipe,
         ]);
-        return result;
+        return result[0];
       },
     },
   }),

@@ -1,7 +1,6 @@
 const _ = require('lodash');
 const { makeTraverser } = require('./core');
 const {
-  proj,
   makePrefix,
   typeFunc,
   fieldFunc,
@@ -10,13 +9,13 @@ const {
 const logger = require('../logger');
 
 const finalize = (root, { project, lookup }) => [
-  { $project: _.assign({}, root, project) },
   ...lookup.map((l) => ({ $lookup: l })),
+  { $project: _.assign({}, root, project) },
 ];
 
 const makePipeline = makeTraverser({
   typeFunc,
-  fieldFunc({ configs, config, field }, [prefix], recursion) {
+  fieldFunc({ config, field }, [prefix], recursion) {
     const result = fieldFunc({ config, field }, [prefix]);
     const def = _.get(config.proj, field);
     if (recursion && def) {
@@ -35,31 +34,31 @@ const makePipeline = makeTraverser({
           localField,
           foreignField,
           as,
-          legacy,
         } = def.reference;
-        _.assign(result, proj('LocalField', pf, localField));
-        if (legacy) {
+        const { project, lookup } = recursion([`${as}.`]);
+        const directField = `${as}.${foreignField}`;
+        if (_.keys(project).length === 1
+          && project[directField] === 1
+          && lookup.length === 0) {
+          _.set(result, [as, '$map'], {
+            input: `$${pf}${localField}`,
+            as: 'id',
+            in: { [foreignField]: '$$id' },
+          });
           return {
             project: result,
-            lookup: [{
-              from,
-              localField: pf + localField,
-              foreignField,
-              as,
-            }],
+            lookup: [],
           };
         }
+        _.assign(result, project);
         return {
           project: result,
           lookup: [{
             from,
-            let: { v1: `$${pf + localField}` },
-            pipeline: [
-              { $match: { [foreignField]: '$$v1' } },
-              ...finalize(configs.root, recursion([prefix])),
-            ],
+            localField: pf + localField,
+            foreignField,
             as,
-          }],
+          }, ...lookup],
         };
       }
     }

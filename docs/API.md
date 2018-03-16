@@ -129,12 +129,10 @@ fieldA: { query: 'mongoA' }, // Project 'mongoA'
     - If undefined, use the field name.
   - `localField: Path` My field name.
     - If undefined, use the value from `query` (`query` MUST NOT be `null`)
-    - This will be projected along with `query`.
   - `foreignField: Path` The referenced field name.
     - If undefiend, use `_id`.
   - `as: String` A temperal field name. SHOULD NOT be conflict with fields.
     - If undefined, use the field name surrounded by `__`.
-  - `legacy: Boolean` - (default `false`) Do not use MongoDB 3.6+ [feature](https://docs.mongodb.com/manual/reference/operator/aggregation/lookup/#join-conditions-and-uncorrelated-sub-queries).
   - `limit: Boolean` - (default `true`) Append `{ $limit: 1 }` to the pipeline.
 
 # Global settings

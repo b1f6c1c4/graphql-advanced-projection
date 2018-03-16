@@ -96,7 +96,6 @@ const genProjection = ({ root, pick }) => {
 };
 
 module.exports = {
-  proj,
   makePrefix,
   typeFunc,
   fieldFunc,
