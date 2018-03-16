@@ -2,9 +2,9 @@ const _ = require('lodash/fp');
 const { pickType } = require('./schema');
 const logger = require('../logger');
 
-function prepareProjectionConfig(def) {
+function prepareProjectionConfig(def, fieldName) {
   if (def === undefined) {
-    return {};
+    return { query: fieldName };
   }
   if (def === null) {
     return { query: null };
@@ -32,9 +32,9 @@ function prepareProjectionConfig(def) {
     };
   }
   return {
-    query: def.query,
+    query: def.query === undefined ? fieldName : def.query,
     select: def.select,
-    recursive: !!def.recursive,
+    recursive: def.recursive ? true : undefined,
     prefix: def.prefix,
   };
 }
@@ -67,16 +67,16 @@ function prepareSchemaConfig(config) {
 function prepareConfig(configs = {}) {
   const root = configs.root || { _id: 0 };
   const ncfgs = _.compose(
-    _.mapValues(
+    _.mapValues.convert({ cap: false })(
       (v) => (_.isArray(v)
         ? _.compose(
           _.map,
           _.update('[1].proj'),
-          _.mapValues,
+          _.mapValues.convert({ cap: false }),
         )
         : _.compose(
           _.update('proj'),
-          _.mapValues,
+          _.mapValues.convert({ cap: false }),
         )
       )(prepareProjectionConfig)(v),
     ),

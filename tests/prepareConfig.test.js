@@ -6,15 +6,15 @@ const {
 
 describe('prepareProjectionConfig', () => {
   it('should accept undefined', () => {
-    const result = prepareProjectionConfig(undefined);
-    expect(result.query).toEqual(undefined);
+    const result = prepareProjectionConfig(undefined, 'fn');
+    expect(result.query).toEqual('fn');
     expect(result.select).toEqual(undefined);
     expect(result.recursive).toBeFalsy();
     expect(result.prefix).toBeUndefined();
   });
 
   it('should accept null', () => {
-    const result = prepareProjectionConfig(null);
+    const result = prepareProjectionConfig(null, 'fn');
     expect(result.query).toEqual(null);
     expect(result.select).toEqual(undefined);
     expect(result.recursive).toBeFalsy();
@@ -22,7 +22,7 @@ describe('prepareProjectionConfig', () => {
   });
 
   it('should accept true', () => {
-    const result = prepareProjectionConfig(true);
+    const result = prepareProjectionConfig(true, 'fn');
     expect(result.query).toEqual(null);
     expect(result.select).toEqual(undefined);
     expect(result.recursive).toBeTruthy();
@@ -30,7 +30,7 @@ describe('prepareProjectionConfig', () => {
   });
 
   it('should accept string', () => {
-    const result = prepareProjectionConfig('str');
+    const result = prepareProjectionConfig('str', 'fn');
     expect(result.query).toEqual('str');
     expect(result.select).toEqual('str');
     expect(result.recursive).toBeFalsy();
@@ -38,7 +38,7 @@ describe('prepareProjectionConfig', () => {
   });
 
   it('should accept recursive string', () => {
-    const result = prepareProjectionConfig('str.');
+    const result = prepareProjectionConfig('str.', 'fn');
     expect(result.query).toEqual(null);
     expect(result.select).toEqual('str');
     expect(result.recursive).toBeTruthy();
@@ -46,7 +46,7 @@ describe('prepareProjectionConfig', () => {
   });
 
   it('should accept recursive string', () => {
-    const result = prepareProjectionConfig('str');
+    const result = prepareProjectionConfig('str', 'fn');
     expect(result.query).toEqual('str');
     expect(result.select).toEqual('str');
     expect(result.recursive).toBeFalsy();
@@ -54,7 +54,7 @@ describe('prepareProjectionConfig', () => {
   });
 
   it('should accept array', () => {
-    const result = prepareProjectionConfig(['a', 'b']);
+    const result = prepareProjectionConfig(['a', 'b'], 'fn');
     expect(result.query).toEqual(['a', 'b']);
     expect(result.select).toEqual(undefined);
     expect(result.recursive).toBeFalsy();
@@ -66,7 +66,7 @@ describe('prepareProjectionConfig', () => {
       query: 'q',
       select: 's',
       recursive: 0,
-    });
+    }, 'fn');
     expect(result.query).toEqual('q');
     expect(result.select).toEqual('s');
     expect(result.recursive).toBeFalsy();
@@ -78,11 +78,21 @@ describe('prepareProjectionConfig', () => {
       query: ['a', 'b'],
       recursive: true,
       prefix: 'xxx',
-    });
+    }, 'fn');
     expect(result.query).toEqual(['a', 'b']);
     expect(result.select).toEqual(undefined);
     expect(result.recursive).toBeTruthy();
     expect(result.prefix).toEqual('xxx');
+  });
+
+  it('should accept object 3', () => {
+    const result = prepareProjectionConfig({
+      recursive: true,
+    }, 'fn');
+    expect(result.query).toEqual('fn');
+    expect(result.select).toEqual(undefined);
+    expect(result.recursive).toBeTruthy();
+    expect(result.prefix).toBeUndefined();
   });
 });
 
@@ -148,6 +158,7 @@ describe('prepareConfig', () => {
         prefix: 'x',
         proj: {
           a: 'b',
+          c: {},
         },
       },
     });
@@ -160,6 +171,9 @@ describe('prepareConfig', () => {
             query: 'b',
             select: 'b',
           },
+          c: {
+            query: 'c',
+          },
         },
       },
     });
@@ -167,6 +181,7 @@ describe('prepareConfig', () => {
       prefix: 'x',
       proj: {
         a: { query: 'b', select: 'b' },
+        c: { query: 'c' },
       },
     });
   });

@@ -58,10 +58,8 @@ function makeProjection(
     switch (sel.kind) {
       case 'Field': {
         logger.debug('Projecting field', fieldName);
-        const def = _.get(cfg.proj, fieldName) || {};
-        if (def.query === undefined) {
-          proj('Default', fieldName);
-        } else if (def.query === null) {
+        const def = _.get(cfg.proj, fieldName) || { query: fieldName };
+        if (def.query === null) {
           logger.trace('>Ignored');
         } else {
           proj('Simple', def.query);

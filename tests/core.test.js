@@ -49,20 +49,6 @@ describe('makeProjection', () => {
     });
   });
 
-  it('should project query undefined', () => {
-    expect.hasAssertions();
-    return expect(run({
-      Obj: {
-        prefix: 'wrap.',
-        proj: {
-          field1: {},
-        },
-      },
-    }, '{ obj { field1 } }')).resolves.toEqual({
-      'wrap.field1': 1,
-    });
-  });
-
   it('should project query null', () => {
     expect.hasAssertions();
     return expect(run({
