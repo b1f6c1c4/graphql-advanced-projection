@@ -1,0 +1,12 @@
+type Query {
+  user(id: ID!): User
+}
+
+type User {
+  items: [Item]
+}
+
+type Item {
+  itemId: ID
+  field4: String
+}
