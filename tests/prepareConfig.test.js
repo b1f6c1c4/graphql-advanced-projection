@@ -24,19 +24,28 @@ describe('preparePipelineConfig', () => {
   });
 
   it('should accept object 1', () => {
-    const result = preparePipelineConfig({ foreignField: 'ff', as: 'sa' }, 'fn', 'qu');
+    const result = preparePipelineConfig({
+      foreignField: 'ff',
+      as: 'sa',
+      limit: false,
+    }, 'fn', 'qu');
     expect(result.from).toEqual('fn');
     expect(result.localField).toEqual('qu');
     expect(result.foreignField).toEqual('ff');
     expect(result.as).toEqual('sa');
+    expect(result.limit).toBeFalsy();
   });
 
   it('should accept object 2', () => {
-    const result = preparePipelineConfig({ from: 'a', localField: 'lf' }, 'fn', 'qu');
+    const result = preparePipelineConfig({
+      from: 'a',
+      localField: 'lf',
+    }, 'fn', 'qu');
     expect(result.from).toEqual('a');
     expect(result.localField).toEqual('lf');
     expect(result.foreignField).toEqual('_id');
     expect(result.as).toEqual('__fn__');
+    expect(result.limit).toBeTruthy();
   });
 });
 

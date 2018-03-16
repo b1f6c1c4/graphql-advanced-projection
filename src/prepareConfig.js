@@ -9,7 +9,13 @@ function preparePipelineConfig(ref, fieldName, query) {
   if (_.isString(ref)) {
     return preparePipelineConfig({ from: ref }, fieldName, query);
   }
-  const { from, localField, foreignField, as } = ref;
+  const {
+    from,
+    localField,
+    foreignField,
+    as,
+    limit,
+  } = ref;
   if (!localField && query === null) {
     throw new Error('Either use localField or use non-null query');
   }
@@ -18,6 +24,7 @@ function preparePipelineConfig(ref, fieldName, query) {
     localField: localField || query,
     foreignField: foreignField || '_id',
     as: as || `__${fieldName}__`,
+    limit: limit !== false,
   };
 }
 
