@@ -35,37 +35,45 @@ const proj = (reason, pf, k) => {
   throw new Error(`Proj not supported: ${k}`);
 };
 
-const makeProjection = makeTraverser({
-  typeFunc({ config }, [prefix]) {
-    if (config.typeProj) {
-      const pf = makePrefix(prefix, config.prefix);
-      return proj('TypeProj', pf, config.typeProj);
-    }
-    return {};
-  },
-  fieldFunc({ config, field }, [prefix], recursion) {
-    let result;
-    logger.debug('Projecting field', field);
-    const def = _.get(config.proj, field) || { query: field };
+const typeFunc = ({ config }, [prefix]) => {
+  if (config.typeProj) {
     const pf = makePrefix(prefix, config.prefix);
-    if (def.query === null) {
-      logger.trace('>Ignored');
-      result = {};
-    } else {
-      result = proj('Simple', pf, def.query);
-    }
-    if (def.recursive && recursion) {
-      result = _.assign(result, recursion([makePrefix(pf, def.prefix, `${field}.`)]));
+    return proj('TypeProj', pf, config.typeProj);
+  }
+  return {};
+};
+
+const fieldFunc = ({ config, field }, [prefix]) => {
+  const def = _.get(config.proj, field);
+  const query = def === undefined ? field : def.query;
+  if (query === null) {
+    logger.trace('>Ignored');
+    return {};
+  }
+  const pf = makePrefix(prefix, config.prefix);
+  return proj('Simple', pf, query);
+};
+
+const stepFunc = ({ config, field, type, next }, [prefix], recursion) => {
+  logger.debug('Projecting (inline) fragment', field);
+  const newPrefix = type.name === next.name
+    ? prefix
+    : makePrefix(prefix, config.prefix);
+  return recursion([newPrefix]);
+};
+
+const makeProjection = makeTraverser({
+  typeFunc,
+  fieldFunc({ config, field }, [prefix], recursion) {
+    const result = fieldFunc({ config, field }, [prefix]);
+    const def = _.get(config.proj, field);
+    if (recursion && def && def.recursive) {
+      const pf = makePrefix(prefix, config.prefix);
+      return _.assign(result, recursion([makePrefix(pf, def.prefix, `${field}.`)]));
     }
     return result;
   },
-  stepFunc({ config, field, type, next }, [prefix], recursion) {
-    logger.debug('Projecting (inline) fragment', field);
-    const newPrefix = type.name === next.name
-      ? prefix
-      : makePrefix(prefix, config.prefix);
-    return recursion([newPrefix]);
-  },
+  stepFunc,
   reduceFunc(configs, typeResult, fieldResults) {
     return _.assign({}, typeResult, ...fieldResults);
   },
@@ -88,6 +96,11 @@ const genProjection = ({ root, pick }) => {
 };
 
 module.exports = {
+  proj,
+  makePrefix,
+  typeFunc,
+  fieldFunc,
+  stepFunc,
   makeProjection,
   genProjection,
 };
