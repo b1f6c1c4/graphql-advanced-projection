@@ -15,6 +15,10 @@ Example:
   - `info` is the 4th argument of a resolver function.
   - `result` is undefined if error occured.
   - `result` is an object with Path as keys and `1` or `0` as value.
+- `genPipeline: (config) => (info) => result`
+  - `info` is the 4th argument of a resolver function.
+  - `result` is an array of [MongoDB aggregation pipeline stages](https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/).
+  - Note: the aggregation result of MongoDB may be an array, so don't forget to retrieve the first element.
 - `genResolvers: (config) => resolvers`
   - `resolvers` is of valid GraphQL resolver format. SHOULD be used with [`graphql-tools/makeExecutableSchema`](https://github.com/apollographql/graphql-tools).
 
@@ -96,6 +100,9 @@ Example:
   - `recursive: Boolean` - (default `false`) Project the fields of the return type altogether. SHOULD be used with `query: null`.
     - It SHOULD be `true` if a single MongoDB query can get all the information.
     - It SHOULD be `false` if a separate query is needed to obtain extra information.
+  - `reference` How to lookup data during aggregation. MUST be a [Pipeline config](pipeline-config).
+    - MUST be used with `select: undefined`.
+    - SHOULD be used with `recursive: false`.
   - `prefix: null | Path` - (ignored except `recursive: true`) Each `Path` projected by the return type is _literally_ prefixed by it.
     - If undefined, prefix the field name and `'.'`.
     - If `null`, don't prefix.
@@ -113,6 +120,22 @@ fieldA: 'mongoA.', // Project the return type of fieldA (with prefix 'mongoA.') 
 fieldA: null, // Do not project
 fieldA: { query: 'mongoA' }, // Project 'mongoA'
 ```
+
+# Pipeline Config
+
+- If it's a string `str`, then it's equivalent to `{ from: str }`.
+- Otherwise, it MUST be an object and MAY contain the following keys:
+  - `from: String` Collection name.
+    - If undefined, use the field name.
+  - `localField: Path` My field name.
+    - If undefined, use the value from `query` (`query` MUST NOT be `null`)
+    - This will be projected along with `query`.
+  - `foreignField: Path` The referenced field name.
+    - If undefiend, use `_id`.
+  - `as: String` A temperal field name. SHOULD NOT be conflict with fields.
+    - If undefined, use the field name surrounded by `__`.
+  - `legacy: Boolean` - (default `false`) Do not use MongoDB 3.6+ [feature](https://docs.mongodb.com/manual/reference/operator/aggregation/lookup/#join-conditions-and-uncorrelated-sub-queries).
+  - `limit: Boolean` - (default `true`) Append `{ $limit: 1 }` to the pipeline.
 
 # Global settings
 
