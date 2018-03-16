@@ -72,7 +72,7 @@ const makeProjection = makeTraverser({
 }, ['']);
 
 const genProjection = ({ root, pick }) => {
-  const projector = makeProjection(pick);
+  const projector = makeProjection({ pick });
   return (info) => {
     try {
       const result = _.assign({}, root, projector(info));

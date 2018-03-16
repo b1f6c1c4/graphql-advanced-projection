@@ -7,12 +7,14 @@ const stripType = (typeRef) => {
   return typeRef.name;
 };
 
-const makeTraverser = ({ typeFunc, fieldFunc, stepFunc, reduceFunc }, seed) => (pick) => {
+const makeTraverser = ({ typeFunc, fieldFunc, stepFunc, reduceFunc }, seed) => (configs) => {
+  const { pick } = configs;
   const func = (root, context, type) => (args) => {
     const { info } = root;
     const config = (pick[type] || _.constant({}))(info);
+    const cfgs = { configs, config, type };
     const fieldResults = [];
-    const typeResult = typeFunc({ config, type }, args);
+    const typeResult = typeFunc(cfgs, args);
     context.selectionSet.selections.forEach((sel) => {
       const field = _.get(sel, 'name.value');
       switch (sel.kind) {
@@ -21,8 +23,7 @@ const makeTraverser = ({ typeFunc, fieldFunc, stepFunc, reduceFunc }, seed) => (
           const next = stripType(typeRef.getFields()[field].type);
           const recursion = sel.selectionSet ? func(root, sel, next) : undefined;
           fieldResults.push(fieldFunc({
-            config,
-            type,
+            ...cfgs,
             field,
             next,
           }, args, recursion));
@@ -33,8 +34,7 @@ const makeTraverser = ({ typeFunc, fieldFunc, stepFunc, reduceFunc }, seed) => (
           const next = newType || type;
           const recursion = func(root, sel, next);
           fieldResults.push(stepFunc({
-            config,
-            type,
+            ...cfgs,
             field,
             next,
           }, args, recursion));
@@ -45,8 +45,7 @@ const makeTraverser = ({ typeFunc, fieldFunc, stepFunc, reduceFunc }, seed) => (
           const next = _.get(frag, 'typeCondition.name.value');
           const recursion = func(root, frag, next);
           fieldResults.push(stepFunc({
-            config,
-            type,
+            ...cfgs,
             field,
             next,
           }, args, recursion));
@@ -58,10 +57,7 @@ const makeTraverser = ({ typeFunc, fieldFunc, stepFunc, reduceFunc }, seed) => (
           throw new Error(`sel.kind not supported: ${sel.kind}`);
       }
     });
-    return reduceFunc({
-      config,
-      type,
-    }, typeResult, fieldResults);
+    return reduceFunc(cfgs, typeResult, fieldResults);
   };
   return (info) => {
     const context = info.fieldNodes[0];

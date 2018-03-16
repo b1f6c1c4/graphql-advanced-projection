@@ -13,7 +13,7 @@ describe('makeProjection', () => {
     const pick = _.mapValues(_.constant)(config);
     const go = (info) => {
       try {
-        const proj = makeProjection(pick)(info);
+        const proj = makeProjection({ pick })(info);
         resolve(proj);
       } catch (e) {
         reject(e);
