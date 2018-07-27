@@ -4,16 +4,16 @@ const path = require('path');
 const { graphql } = require('graphql');
 const { makeExecutableSchema } = require('graphql-tools');
 const { prepareConfig } = require('../src/prepareConfig');
-const { makePipeline, genPipeline } = require('../src/pipeline');
+const { makeRef, genRef } = require('../src/ref');
 
-describe('makePipeline', () => {
+describe('makeRef', () => {
   const typeDefs = fs.readFileSync(path.join(__dirname, 'schema.graphql'), 'utf-8');
 
   const run = (config, query) => new Promise((resolve, reject) => {
     const pick = _.mapValues(_.constant)(config);
     const go = (info) => {
       try {
-        const proj = makePipeline({ root: { _id: 0 }, pick })(info);
+        const proj = makeRef({ root: { _id: 0 }, pick })(info);
         resolve(proj);
       } catch (e) {
         reject(e);
@@ -189,13 +189,13 @@ describe('makePipeline', () => {
   });
 });
 
-describe('genPipeline', () => {
+describe('genRef', () => {
   const typeDefs = fs.readFileSync(path.join(__dirname, 'schema.graphql'), 'utf-8');
 
   const run = (config, query) => new Promise((resolve, reject) => {
     const go = (info) => {
       try {
-        const proj = genPipeline(prepareConfig(config));
+        const proj = genRef(prepareConfig(config));
         resolve(proj(info));
       } catch (e) {
         reject(e);

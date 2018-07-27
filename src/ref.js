@@ -13,7 +13,7 @@ const finalize = (root, { project, lookup }) => [
   { $project: _.assign({}, root, project) },
 ];
 
-const makePipeline = makeTraverser({
+const makeRef = makeTraverser({
   typeFunc,
   fieldFunc({ config, field }, [prefix], recursion) {
     const result = fieldFunc({ config, field }, [prefix]);
@@ -73,12 +73,12 @@ const makePipeline = makeTraverser({
   },
 }, ['']);
 
-const genPipeline = ({ root, pick }) => {
-  const pipeliner = makePipeline({ root, pick });
+const genRef = ({ root, pick }) => {
+  const pipeliner = makeRef({ root, pick });
   return (info) => {
     try {
       const result = finalize(root, pipeliner(info));
-      logger.debug('Pipeline result', result);
+      logger.debug('Ref result', result);
       return result;
     } catch (e) {
       /* istanbul ignore next */
@@ -90,6 +90,6 @@ const genPipeline = ({ root, pick }) => {
 };
 
 module.exports = {
-  makePipeline,
-  genPipeline,
+  makeRef,
+  genRef,
 };
