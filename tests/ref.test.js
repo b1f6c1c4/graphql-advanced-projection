@@ -41,8 +41,7 @@ describe('makeRef', () => {
   it('should project default when not configured', () => {
     expect.hasAssertions();
     return expect(run({}, '{ obj { field1 } }')).resolves.toEqual({
-      project: { field1: 1 },
-      lookup: [],
+      '': { field1: 1 },
     });
   });
 
@@ -58,8 +57,7 @@ describe('makeRef', () => {
         },
       },
     }, '{ obj { field1 } }')).resolves.toEqual({
-      project: { 'wrap.value': 1 },
-      lookup: [],
+      '': { 'wrap.value': 1 },
     });
   });
 
@@ -79,10 +77,9 @@ describe('makeRef', () => {
         },
       },
     }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
-      project: {
+      '': {
         'wrap.field2': 1,
       },
-      lookup: [],
     });
   });
 
@@ -99,12 +96,11 @@ describe('makeRef', () => {
         },
       },
     }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
-      project: {
+      '': {
         'wrap.evil': 1,
         'wrap.evils': 1,
         'wrap.field2.f1': 1,
       },
-      lookup: [],
     });
   });
 
@@ -147,12 +143,11 @@ describe('makeRef', () => {
     }
   }
 }`)).resolves.toEqual({
-      project: {
+      '': {
         'evil.wrap.type': 1,
         'evil.wrap.value': 1,
         'evil.wrap.wrap2.value2': 1,
       },
-      lookup: [],
     });
   });
 
@@ -165,26 +160,63 @@ describe('makeRef', () => {
           field2: {
             query: 'q',
             reference: {
-              from: 'ff',
-              localField: 'lf',
-              foreignField: 'ff',
               as: 'aa',
-              legacy: true,
+            },
+          },
+          field3: {
+            query: 'p',
+            reference: {
+              as: 'bb',
             },
           },
         },
       },
-    }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
-      project: {
-        'wrap.q': 1,
-        'aa.f1': 1,
+      Father: {
+        prefix: 'fthr.',
+        proj: {
+          g0: {
+            query: 'tt',
+          },
+        },
       },
-      lookup: [{
-        from: 'ff',
-        localField: 'wrap.lf',
-        foreignField: 'ff',
-        as: 'aa',
-      }],
+    }, '{ obj { field2 { f1 } field3 { g0 } } }')).resolves.toEqual({
+      '': {
+        'wrap.q': 1,
+        'wrap.p': 1,
+      },
+      aa: {
+        f1: 1,
+      },
+      bb: {
+        'fthr.tt': 1,
+      },
+    });
+  });
+
+  it('should lookup evil', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Evil: {
+        prefix: 'wrap.',
+        proj: {
+          self: {
+            query: 'q',
+            reference: {
+              as: 'aa',
+            },
+          },
+        },
+      },
+    }, '{ evil { self { self { field } } } }')).resolves.toEqual({
+      '': {
+        'wrap.q': 1,
+      },
+      aa: {
+        'wrap.q': 1,
+      },
+      'aa.aa': {
+        'wrap.field': 1,
+      },
     });
   });
 });

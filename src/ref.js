@@ -4,9 +4,15 @@ const {
   makePrefix,
   typeFunc,
   fieldFunc,
-  stepFunc,
 } = require('./projection');
 const logger = require('../logger');
+
+const joinMeta = (prev, next) => {
+  if (prev === '') {
+    return next;
+  }
+  return prev + '.' + next;
+};
 
 const finalize = (root, { project, lookup }) => [
   ...lookup.map((l) => ({ $lookup: l })),
@@ -14,64 +20,38 @@ const finalize = (root, { project, lookup }) => [
 ];
 
 const makeRef = makeTraverser({
-  typeFunc,
-  fieldFunc({ config, field }, [prefix], recursion) {
-    const result = fieldFunc({ config, field }, [prefix]);
+  typeFunc: (cfg, [, prefix]) => typeFunc(cfg, [prefix]),
+  fieldFunc({ config, field }, [metaPath, prefix], recursion) {
+    const result = { [metaPath]: fieldFunc({ config, field }, [prefix]) };
     const def = _.get(config.proj, field);
     if (recursion && def) {
       const pf = makePrefix(prefix, config.prefix);
       if (def.recursive) {
-        const newArgs = [makePrefix(pf, def.prefix, `${field}.`)];
-        const { project, lookup } = recursion(newArgs);
-        return {
-          project: _.assign(result, project),
-          lookup,
-        };
+        const newArgs = [metaPath, makePrefix(pf, def.prefix, `${field}.`)];
+        const project = recursion(newArgs);
+        return _.merge(result, project);
       }
       if (def.reference) {
         const {
-          from,
-          localField,
-          foreignField,
           as,
         } = def.reference;
-        const { project, lookup } = recursion([`${as}.`]);
-        const directField = `${as}.${foreignField}`;
-        if (_.keys(project).length === 1
-          && project[directField] === 1
-          && lookup.length === 0) {
-          _.set(result, [as, '$map'], {
-            input: `$${pf}${localField}`,
-            as: 'id',
-            in: { [foreignField]: '$$id' },
-          });
-          return {
-            project: result,
-            lookup: [],
-          };
-        }
-        _.assign(result, project);
-        return {
-          project: result,
-          lookup: [{
-            from,
-            localField: pf + localField,
-            foreignField,
-            as,
-          }, ...lookup],
-        };
+        const project = recursion([joinMeta(metaPath, as), '']);
+        return _.merge(result, project);
       }
     }
-    return { project: result, lookup: [] };
+    return result;
   },
-  stepFunc,
-  reduceFunc(configs, typeResult, fieldResults) {
-    return {
-      project: _.assign({}, typeResult, ..._.map(fieldResults, 'project')),
-      lookup: _.flatMap(fieldResults, 'lookup'),
-    };
+  stepFunc({ config, field, type, next }, [metaPath, prefix], recursion) {
+    logger.debug('Projecting (inline) fragment', field);
+    const newPrefix = type.name === next.name
+      ? prefix
+      : makePrefix(prefix, config.prefix);
+    return recursion([metaPath, newPrefix]);
   },
-}, ['']);
+  reduceFunc(configs, [metaPath], typeResult, fieldResults) {
+    return _.merge({}, { [metaPath]: typeResult }, ...fieldResults);
+  },
+}, ['', '']);
 
 const genRef = ({ root, pick }) => {
   const pipeliner = makeRef({ root, pick });
@@ -82,7 +62,7 @@ const genRef = ({ root, pick }) => {
       return result;
     } catch (e) {
       /* istanbul ignore next */
-      logger.error('Pipelining', e);
+      logger.error('Refs', e);
       /* istanbul ignore next */
       return undefined;
     }

@@ -61,7 +61,7 @@ const makeTraverser = ({ typeFunc, fieldFunc, stepFunc, reduceFunc }, seed) => (
           throw new Error(`sel.kind not supported: ${sel.kind}`);
       }
     });
-    return reduceFunc(cfgs, typeResult, fieldResults);
+    return reduceFunc(cfgs, args, typeResult, fieldResults);
   };
   return (info) => {
     const context = info.fieldNodes[0];

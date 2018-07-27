@@ -54,14 +54,6 @@ const fieldFunc = ({ config, field }, [prefix]) => {
   return proj('Simple', pf, query);
 };
 
-const stepFunc = ({ config, field, type, next }, [prefix], recursion) => {
-  logger.debug('Projecting (inline) fragment', field);
-  const newPrefix = type.name === next.name
-    ? prefix
-    : makePrefix(prefix, config.prefix);
-  return recursion([newPrefix]);
-};
-
 const makeProjection = makeTraverser({
   typeFunc,
   fieldFunc({ config, field }, [prefix], recursion) {
@@ -73,8 +65,14 @@ const makeProjection = makeTraverser({
     }
     return result;
   },
-  stepFunc,
-  reduceFunc(configs, typeResult, fieldResults) {
+  stepFunc({ config, field, type, next }, [prefix], recursion) {
+    logger.debug('Projecting (inline) fragment', field);
+    const newPrefix = type.name === next.name
+      ? prefix
+      : makePrefix(prefix, config.prefix);
+    return recursion([newPrefix]);
+  },
+  reduceFunc(configs, args, typeResult, fieldResults) {
     return _.assign({}, typeResult, ...fieldResults);
   },
 }, ['']);
@@ -99,7 +97,6 @@ module.exports = {
   makePrefix,
   typeFunc,
   fieldFunc,
-  stepFunc,
   makeProjection,
   genProjection,
 };
