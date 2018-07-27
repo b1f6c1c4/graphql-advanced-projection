@@ -14,10 +14,10 @@ Example:
 - `genProjection: (config) => (info) => result`
   - `info` is the 4th argument of a resolver function.
   - `result` is undefined if error occured.
-  - `result` is an object with Path as keys and `1` or `0` as value.
+  - `result` is an (projection) object with Path as keys and `1` or `0` as value.
 - `genProjections: (config) => (info) => result`
   - `info` is the 4th argument of a resolver function.
-  - `result` is an array of 
+  - `result` is an object, mapping meta path to projection.
 - `genResolvers: (config) => resolvers`
   - `resolvers` is of valid GraphQL resolver format. SHOULD be used with [`graphql-tools/makeExecutableSchema`](https://github.com/apollographql/graphql-tools).
 
@@ -119,16 +119,10 @@ fieldA: { query: 'mongoA' }, // Project 'mongoA'
 
 # Ref Config
 
-- If it's a string `str`, then it's equivalent to `{ from: str }`.
+- If it's `true`, then it's equivalent to `{ as: fieldName }`.
+- If it's a string `str`, then it's equivalent to `{ as: str }`.
 - Otherwise, it MUST be an object and MAY contain the following keys:
-  - `from: String` Collection name.
-    - If undefined, use the field name.
-  - `localField: Path` My field name.
-    - If undefined, use the value from `query` (`query` MUST NOT be `null`)
-  - `foreignField: Path` The referenced field name.
-    - If undefiend, use `_id`.
-  - `as: String` A temperal field name. SHOULD NOT be conflict with fields.
-    - If undefined, use the field name surrounded by `__`.
+  - `as: String` - Part of meta path.
 
 # Global settings
 

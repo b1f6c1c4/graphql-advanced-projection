@@ -254,9 +254,9 @@ describe('genRef', () => {
 
   it('should project simple', () => {
     expect.hasAssertions();
-    return expect(run({ Obj: { proj: { field1: 'a' } } }, '{ obj { field1 } }')).resolves.toEqual([
-      { $project: { _id: 0, a: 1 } },
-    ]);
+    return expect(run({ Obj: { proj: { field1: 'a' } } }, '{ obj { field1 } }')).resolves.toEqual({
+      '': { _id: 0, a: 1 },
+    });
   });
 
   it('should lookup simple', () => {
@@ -267,88 +267,9 @@ describe('genRef', () => {
           field2: { reference: 'foos' },
         },
       },
-    }, '{ obj { field2 { f1 } } }')).resolves.toEqual([
-      {
-        $lookup: {
-          from: 'foos',
-          localField: 'field2',
-          foreignField: '_id',
-          as: '__field2__',
-        },
-      },
-      { $project: { _id: 0, field2: 1, '__field2__.f1': 1 } },
-    ]);
-  });
-
-  it('should not lookup id', () => {
-    expect.hasAssertions();
-    return expect(run({
-      Obj: {
-        proj: {
-          field2: { reference: { from: 'foos', foreignField: 'f1' } },
-        },
-      },
-    }, '{ obj { field2 { f1 } } }')).resolves.toEqual([
-      {
-        $project: {
-          _id: 0,
-          field2: 1,
-          __field2__: {
-            $map: {
-              input: '$field2',
-              as: 'id',
-              in: { f1: '$$id' },
-            },
-          },
-        },
-      },
-    ]);
-  });
-
-  it('should lookup further', () => {
-    expect.hasAssertions();
-    return expect(run({
-      Obj: {
-        proj: {
-          evil: {
-            query: null,
-            reference: {
-              from: 'evils',
-              localField: 'xevil',
-              foreignField: 'field',
-            },
-          },
-        },
-      },
-      Evil: {
-        proj: {
-          self: {
-            query: null,
-            reference: {
-              from: 'evils',
-              localField: 'xself',
-            },
-          },
-        },
-      },
-    }, '{ obj { evil { self { field } } } }')).resolves.toEqual([
-      {
-        $lookup: {
-          from: 'evils',
-          localField: 'xevil',
-          foreignField: 'field',
-          as: '__evil__',
-        },
-      },
-      {
-        $lookup: {
-          from: 'evils',
-          localField: '__evil__.xself',
-          foreignField: '_id',
-          as: '__self__',
-        },
-      },
-      { $project: { _id: 0, '__self__.field': 1 } },
-    ]);
+    }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
+      '': { _id: 0, field2: 1 },
+      foos: { _id: 0, f1: 1 },
+    });
   });
 });

@@ -1,51 +1,31 @@
 const {
-  preparePipelineConfig,
+  prepareRefConfig,
   prepareProjectionConfig,
   prepareSchemaConfig,
   prepareConfig,
 } = require('../src/prepareConfig');
 
-describe('preparePipelineConfig', () => {
+describe('prepareRefConfig', () => {
   it('should accept undefiend', () => {
-    const result = preparePipelineConfig(undefined, 'fn', 'qu');
+    const result = prepareRefConfig(undefined, 'fn', 'qu');
     expect(result).toBeUndefined();
   });
 
-  it('should throw no localField no query', () => {
-    expect(() => preparePipelineConfig('xx', 'fn', null)).toThrow();
+  it('should accept bool', () => {
+    const result = prepareRefConfig(true, 'fn', 'qu');
+    expect(result.as).toEqual('fn');
   });
 
   it('should accept string', () => {
-    const result = preparePipelineConfig('xx', 'fn', 'qu');
-    expect(result.from).toEqual('xx');
-    expect(result.localField).toEqual('qu');
-    expect(result.foreignField).toEqual('_id');
-    expect(result.as).toEqual('__fn__');
+    const result = prepareRefConfig('xx', 'fn', 'qu');
+    expect(result.as).toEqual('xx');
   });
 
-  it('should accept object 1', () => {
-    const result = preparePipelineConfig({
-      foreignField: 'ff',
+  it('should accept object', () => {
+    const result = prepareRefConfig({
       as: 'sa',
-      limit: false,
     }, 'fn', 'qu');
-    expect(result.from).toEqual('fn');
-    expect(result.localField).toEqual('qu');
-    expect(result.foreignField).toEqual('ff');
     expect(result.as).toEqual('sa');
-    expect(result.limit).toBeFalsy();
-  });
-
-  it('should accept object 2', () => {
-    const result = preparePipelineConfig({
-      from: 'a',
-      localField: 'lf',
-    }, 'fn', 'qu');
-    expect(result.from).toEqual('a');
-    expect(result.localField).toEqual('lf');
-    expect(result.foreignField).toEqual('_id');
-    expect(result.as).toEqual('__fn__');
-    expect(result.limit).toBeTruthy();
   });
 });
 
@@ -145,28 +125,23 @@ describe('prepareProjectionConfig', () => {
       reference: { as: 'xxxx' },
     }, 'fn');
     expect(result.query).toEqual('fn');
-    expect(result.select).toEqual('xxxx');
+    expect(result.select).toEqual(undefined);
     expect(result.recursive).toBeFalsy();
     expect(result.prefix).toBeUndefined();
-    expect(result.reference.from).toEqual('fn');
-    expect(result.reference.localField).toEqual('fn');
+    expect(result.reference.as).toEqual('xxxx');
   });
 
   it('should accept object 5', () => {
     const result = prepareProjectionConfig({
       query: 'q',
-      reference: { },
+      select: 'hehe',
+      reference: 'hq',
     }, 'fn');
     expect(result.query).toEqual('q');
-    expect(result.select).toEqual('__fn__');
+    expect(result.select).toEqual('hehe');
     expect(result.recursive).toBeFalsy();
     expect(result.prefix).toBeUndefined();
-    expect(result.reference.from).toEqual('fn');
-    expect(result.reference.localField).toEqual('q');
-  });
-
-  it('should throw select and ref', () => {
-    expect(() => prepareProjectionConfig({ select: 'x', reference: 'xxx' }, 'fn')).toThrow();
+    expect(result.reference.as).toEqual('hq');
   });
 });
 

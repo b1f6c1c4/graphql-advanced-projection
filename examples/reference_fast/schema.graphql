@@ -3,6 +3,7 @@ type Query {
 }
 
 type User {
+  field3: String
   items: [Item]
 }
 

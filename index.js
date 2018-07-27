@@ -1,13 +1,13 @@
 const { prepareConfig } = require('./src/prepareConfig');
 const { genProjection } = require('./src/projection');
-const { genPipeline } = require('./src/pipeline');
+const { genRef } = require('./src/ref');
 const { genResolvers } = require('./src/resolver');
 
 const gqlProjection = (config) => {
   const ncfgs = prepareConfig(config);
   return {
     project: genProjection(ncfgs),
-    pipeline: genPipeline(ncfgs),
+    projects: genRef(ncfgs),
     resolvers: genResolvers(ncfgs),
   };
 };
@@ -17,5 +17,5 @@ module.exports.default = gqlProjection;
 module.exports.gqlProjection = gqlProjection;
 module.exports.prepareConfig = prepareConfig;
 module.exports.genProjection = genProjection;
-module.exports.genPipeline = genPipeline;
+module.exports.genProjections = genRef;
 module.exports.genResolvers = genResolvers;

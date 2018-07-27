@@ -5,6 +5,28 @@ const { run, connect } = require('../');
 
 const { make } = jestMongoose(models, connect);
 
+it('nothing', async (done) => {
+  await make.User({
+    _id: 'the-id',
+    itemsId: ['item1', 'item2'],
+  });
+  const result = await run(gql, `
+query {
+  user(id: "the-id") {
+    field3
+  }
+}
+`);
+  expect(result).toEqual({
+    data: {
+      user: {
+        field3: '',
+      },
+    },
+  });
+  done();
+});
+
 it('itemId', async (done) => {
   await make.Item({ _id: 'item1', mongoD: 'd1' });
   await make.Item({ _id: 'item2', mongoD: 'd2' });

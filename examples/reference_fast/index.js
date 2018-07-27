@@ -2,18 +2,15 @@ const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const { makeExecutableSchema } = require('graphql-tools');
-const { User } = require('./models');
+const { User, Item } = require('./models');
 const gqlProjection = require('../../');
 
-const { pipeline, resolvers } = gqlProjection({
+const { projects, resolvers } = gqlProjection({
   User: {
     proj: {
       items: {
-        query: null,
-        reference: {
-          from: 'items',
-          localField: 'itemsId',
-        },
+        query: 'itemsId',
+        reference: true,
       },
     },
   },
@@ -30,13 +27,18 @@ module.exports = makeExecutableSchema({
   resolvers: _.merge(resolvers, {
     Query: {
       async user(parent, args, context, info) {
-        const pipe = pipeline(info);
-        const result = await User.aggregate([
-          { $match: { _id: args.id } },
-          ...pipe,
-        ]);
-        return result[0];
+        const projs = projects(info);
+        const result0 = await User.findById(args.id, projs['']);
+        if ('items' in projs) {
+          const result1 = await Item.find({ _id: { $in: result0.itemsId } }, projs.items);
+          result0.items = result1;
+          return result0;
+        }
+        return result0;
       },
+    },
+    User: {
+      field3: () => '',
     },
   }),
 });

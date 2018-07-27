@@ -11,13 +11,8 @@ const joinMeta = (prev, next) => {
   if (prev === '') {
     return next;
   }
-  return prev + '.' + next;
+  return `${prev}.${next}`;
 };
-
-const finalize = (root, { project, lookup }) => [
-  ...lookup.map((l) => ({ $lookup: l })),
-  { $project: _.assign({}, root, project) },
-];
 
 const makeRef = makeTraverser({
   typeFunc: (cfg, [, prefix]) => typeFunc(cfg, [prefix]),
@@ -54,18 +49,11 @@ const makeRef = makeTraverser({
 }, ['', '']);
 
 const genRef = ({ root, pick }) => {
-  const pipeliner = makeRef({ root, pick });
+  const projector = makeRef({ root, pick });
   return (info) => {
-    try {
-      const result = finalize(root, pipeliner(info));
-      logger.debug('Ref result', result);
-      return result;
-    } catch (e) {
-      /* istanbul ignore next */
-      logger.error('Refs', e);
-      /* istanbul ignore next */
-      return undefined;
-    }
+    const result = _.mapValues(projector(info), (p) => _.assign({}, root, p));
+    logger.debug('Ref result', result);
+    return result;
   };
 };
 
