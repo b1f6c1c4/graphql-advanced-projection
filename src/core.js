@@ -20,7 +20,11 @@ const makeTraverser = ({ typeFunc, fieldFunc, stepFunc, reduceFunc }, seed) => (
       switch (sel.kind) {
         case 'Field': {
           const typeRef = info.schema.getType(type);
-          const next = stripType(typeRef.getFields()[field].type);
+          const fieldValue = typeRef.getFields()[field];
+          if (!fieldValue) {
+            return;
+          }
+          const next = stripType(fieldValue.type);
           const recursion = sel.selectionSet ? func(root, sel, next) : undefined;
           fieldResults.push(fieldFunc({
             ...cfgs,
