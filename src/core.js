@@ -21,7 +21,7 @@ const makeTraverser = ({ typeFunc, fieldFunc, stepFunc, reduceFunc }, seed) => (
         case 'Field': {
           const typeRef = info.schema.getType(type);
           const fieldValue = typeRef.getFields()[field];
-          if  (!fieldValue) {
+          if (!fieldValue) {
             return;
           }
           const next = stripType(fieldValue.type);
