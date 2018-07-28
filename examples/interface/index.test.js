@@ -28,6 +28,31 @@ query {
   done();
 });
 
+it('User.field1 with typename', async (done) => {
+  await make.User({
+    _id: 'the-id',
+    type: 'admin',
+    mongoA: 123,
+  });
+  const result = await run(gql, `
+query {
+  user(id: "the-id") {
+    __typename
+    field1
+  }
+}
+`);
+  expect(result).toEqual({
+    data: {
+      user: {
+        __typename: 'AdminUser',
+        field1: 123,
+      },
+    },
+  });
+  done();
+});
+
 it('AdminUser.field1', async (done) => {
   await make.User({
     _id: 'the-id',
