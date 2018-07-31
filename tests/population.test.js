@@ -4,16 +4,16 @@ const path = require('path');
 const { graphql } = require('graphql');
 const { makeExecutableSchema } = require('graphql-tools');
 const { prepareConfig } = require('../src/prepareConfig');
-const { makeRef, genRef } = require('../src/ref');
+const { makePopulation, genPopulation } = require('../src/population');
 
-describe('makeRef', () => {
+describe.only('makePopulation', () => {
   const typeDefs = fs.readFileSync(path.join(__dirname, 'schema.graphql'), 'utf-8');
 
   const run = (config, query) => new Promise((resolve, reject) => {
     const pick = _.mapValues(_.constant)(config);
     const go = (info) => {
       try {
-        const proj = makeRef({ root: { _id: 0 }, pick })(info);
+        const proj = makePopulation({ root: { _id: 0 }, pick })(info);
         resolve(proj);
       } catch (e) {
         reject(e);
@@ -41,7 +41,8 @@ describe('makeRef', () => {
   it('should project default when not configured', () => {
     expect.hasAssertions();
     return expect(run({}, '{ obj { field1 } }')).resolves.toEqual({
-      '': { field1: 1 },
+      path: '',
+      select: { field1: 1 },
     });
   });
 
@@ -57,11 +58,12 @@ describe('makeRef', () => {
         },
       },
     }, '{ obj { field1 } }')).resolves.toEqual({
-      '': { 'wrap.value': 1 },
+      path: '',
+      select: { 'wrap.value': 1 },
     });
   });
 
-  it('should not project recursive if false', () => {
+  it('should populate not recursive', () => {
     expect.hasAssertions();
     return expect(run({
       Obj: {
@@ -77,9 +79,14 @@ describe('makeRef', () => {
         },
       },
     }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
-      '': {
+      path: '',
+      select: {
         'wrap.field2': 1,
       },
+      populate: [{
+        path: 'wrap.field2',
+        select: { 'wrap2.foo': 1 },
+      }],
     });
   });
 
@@ -96,7 +103,8 @@ describe('makeRef', () => {
         },
       },
     }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
-      '': {
+      path: '',
+      select: {
         'wrap.evil': 1,
         'wrap.evils': 1,
         'wrap.field2.f1': 1,
@@ -143,7 +151,8 @@ describe('makeRef', () => {
     }
   }
 }`)).resolves.toEqual({
-      '': {
+      path: '',
+      select: {
         'evil.wrap.type': 1,
         'evil.wrap.value': 1,
         'evil.wrap.wrap2.value2': 1,
@@ -179,17 +188,20 @@ describe('makeRef', () => {
           },
         },
       },
-    }, '{ obj { field2 { f1 } field3 { g0 } } }')).resolves.toEqual({
-      '': {
+    }, '{ obj { field1 field2 { f1 } field3 { g0 } } }')).resolves.toEqual({
+      path: '',
+      select: {
+        'wrap.field1': 1,
         'wrap.q': 1,
         'wrap.p': 1,
       },
-      aa: {
-        f1: 1,
-      },
-      bb: {
-        'fthr.tt': 1,
-      },
+      populate: [{
+        path: 'wrap.q',
+        select: { f1: 1 },
+      }, {
+        path: 'wrap.p',
+        select: { 'fthr.tt': 1 },
+      }],
     });
   });
 
@@ -208,26 +220,29 @@ describe('makeRef', () => {
         },
       },
     }, '{ evil { self { self { field } } } }')).resolves.toEqual({
-      '': {
+      path: '',
+      select: {
         'wrap.q': 1,
       },
-      aa: {
-        'wrap.q': 1,
-      },
-      'aa.aa': {
-        'wrap.field': 1,
-      },
+      populate: [{
+        path: 'wrap.q',
+        select: { 'wrap.q': 1 },
+        populate: [{
+          path: 'wrap.q',
+          select: { 'wrap.field': 1 },
+        }],
+      }],
     });
   });
 });
 
-describe('genRef', () => {
+describe('genPopulation', () => {
   const typeDefs = fs.readFileSync(path.join(__dirname, 'schema.graphql'), 'utf-8');
 
   const run = (config, query) => new Promise((resolve, reject) => {
     const go = (info) => {
       try {
-        const proj = genRef(prepareConfig(config));
+        const proj = genPopulation(prepareConfig(config));
         resolve(proj(info));
       } catch (e) {
         reject(e);

@@ -17,6 +17,8 @@ Example:
   - `result` is an object with Path as keys and `1` or `0` as value.
 - `genResolvers: (config) => resolvers`
   - `resolvers` is of valid GraphQL resolver format. SHOULD be used with [`graphql-tools/makeExecutableSchema`](https://github.com/apollographql/graphql-tools).
+- `genPopulation: (config) => [option]`
+  - `option` is [Mongoose population option](http://mongoosejs.com/docs/populate.html#query-conditions).
 
 # Config object
 

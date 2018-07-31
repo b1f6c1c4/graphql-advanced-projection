@@ -1,73 +1,77 @@
-const makeSelect = (relation, projections) => {
-  const select = {};
-  const otherProjections = [];
+const _ = require('lodash');
+const fp = require('lodash/fp');
+const { makeTraverser } = require('./core');
+const {
+  makePrefix,
+  typeFunc,
+  fieldFunc,
+} = require('./projection');
+const logger = require('../logger');
 
-  projections
-    .filter(([first, ...nested]) => first === relation && nested.length)
-  // eslint-disable-next-line no-unused-vars
-    .map(([first, ...nested]) => nested)
-    .forEach(([second, ...nested]) => {
-      select[second] = 1;
-      if (nested.length) {
-        otherProjections.push([second, ...nested]);
+const makePopulation = makeTraverser({
+  typeFunc: (cfg, [, prefix]) => typeFunc(cfg, [prefix]),
+  fieldFunc({ config, field }, [metaPath, prefix], recursion) {
+    const result = {
+      path: metaPath,
+      select: fieldFunc({ config, field }, [prefix]),
+    };
+    const def = _.get(config.proj, field);
+    if (recursion && def) {
+      const pf = makePrefix(prefix, config.prefix);
+      if (def.recursive) {
+        const newArgs = [metaPath, makePrefix(pf, def.prefix, `${field}.`)];
+        const project = recursion(newArgs);
+        return _.merge(result, project);
       }
-    });
-
-  return {
-    select,
-    otherProjections,
-  };
-};
-
-const makePopulation = (paths, projections) => {
-  const [path, ...nestedPaths] = paths;
-
-  // eslint-disable-next-line no-unused-vars
-  if (!projections.some(([rootProjection, ..._]) => rootProjection === path)) {
-    return { path: '' };
-  }
-
-  const { select, otherProjections } = makeSelect(path, projections);
-
-  if (!nestedPaths.length) {
+      const populate = recursion([pf + def.query, '']); // TODO
+      return _.merge(result, { populate });
+    }
+    return result;
+  },
+  stepFunc({ config, field, type, next }, [metaPath, prefix], recursion) {
+    logger.debug('Projecting (inline) fragment', field);
+    const newPrefix = type.name === next.name
+      ? prefix
+      : makePrefix(prefix, config.prefix);
+    return recursion([metaPath, newPrefix]);
+  },
+  reduceFunc(configs, [metaPath], typeResult, fieldResults) {
+    const raw = fp.compose(
+      fp.mapValues(fp.reduce(fp.merge, {})),
+      fp.groupBy('path'),
+      fp.compact,
+      fp.map('populate'),
+    )(fieldResults);
+    const select = fp.compose(
+      fp.merge(typeResult),
+      fp.reduce(fp.merge, {}),
+      fp.map('select'),
+    )(fieldResults);
+    const populate = fp.values(raw);
+    if (populate.length) {
+      return {
+        path: metaPath,
+        select,
+        populate,
+      };
+    }
     return {
-      path,
+      path: metaPath,
       select,
     };
-  }
+  },
+}, ['', '']);
 
-  return {
-    path,
-    select,
-    populate: makePopulation(nestedPaths, otherProjections),
+const genPopulation = ({ root, pick }) => {
+  const projector = makePopulation({ root, pick });
+  return (info) => {
+    const result = _.mapValues(projector(info), (p) => _.assign({}, root, p));
+    logger.debug('Population result', result);
+    return result;
   };
-};
-
-
-const convertProjectionsToArrayOfPaths = (projections) => {
-  const paths = {};
-  const addToPaths = ([first, ...others]) => {
-    if (others.length) {
-      paths[first] = 1;
-      addToPaths(others);
-    }
-  };
-
-  projections.forEach(addToPaths);
-  return Object.keys(paths);
-};
-
-const genPopulation = (projections) => {
-  const splitProjections = Object.keys(projections || {})
-    .map((projection) => projection.split('.'));
-  const paths = convertProjectionsToArrayOfPaths(splitProjections);
-
-  return makePopulation(
-    paths,
-    splitProjections,
-  );
 };
 
 module.exports = {
+  makePopulation,
   genPopulation,
 };
