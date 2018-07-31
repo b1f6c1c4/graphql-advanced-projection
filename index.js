@@ -9,7 +9,7 @@ const gqlProjection = (config) => {
   return {
     project: genProjection(ncfgs),
     resolvers: genResolvers(ncfgs),
-    populate: genPopulation(ncfgs),
+    population: genPopulation(ncfgs),
   };
 };
 

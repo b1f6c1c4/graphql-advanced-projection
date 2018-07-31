@@ -11,11 +11,11 @@ const stripType = (typeRef) => {
 };
 
 const makeTraverser = ({ typeFunc, fieldFunc, stepFunc, reduceFunc }, seed) => (configs) => {
-  const { pick } = configs;
+  const { root: globalRoot, pick } = configs;
   const func = (root, context, type) => (args) => {
     const { info } = root;
     const config = (pick[type.name] || _.constant({}))(info);
-    const cfgs = { configs, config, type };
+    const cfgs = { root: globalRoot, configs, config, type };
     const fieldResults = [];
     const typeResult = typeFunc(cfgs, args);
     context.selectionSet.selections.forEach((sel) => {

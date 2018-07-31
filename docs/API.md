@@ -95,7 +95,7 @@ Example:
   - `select: Path` - Generate a resolver for the type that maps the Path to the field.
     - If undefined, don't generate.
     - Note: GraphQL will natively resolve `fieldName: (parent) => parent.fieldName`. Thus if `select` exactly matches the field name, leave it undefined.
-  - `recursive: Boolean` - (default `false`) Project the fields of the return type altogether. SHOULD be used with `query: null`.
+  - `recursive: Boolean` - (default `false`) Project the fields of the return type altogether. For `genProjection`, SHOULD be used with `query: null`; for `genPopulation`, MUST be used with `query: string`.
     - It SHOULD be `true` if a single MongoDB query can get all the information.
     - It SHOULD be `false` if a separate query is needed to obtain extra information.
   - `prefix: null | Path` - (ignored except `recursive: true`) Each `Path` projected by the return type is _literally_ prefixed by it.

@@ -10,7 +10,7 @@ const logger = require('../logger');
 
 const makePopulation = makeTraverser({
   typeFunc: (cfg, [, prefix]) => typeFunc(cfg, [prefix]),
-  fieldFunc({ config, field }, [metaPath, prefix], recursion) {
+  fieldFunc({ root, config, field }, [metaPath, prefix], recursion) {
     const result = {
       path: metaPath,
       select: fieldFunc({ config, field }, [prefix]),
@@ -23,7 +23,10 @@ const makePopulation = makeTraverser({
         const project = recursion(newArgs);
         return _.merge(result, project);
       }
-      const populate = recursion([pf + def.query, '']); // TODO
+      if (!_.isString(def.query)) {
+        throw new Error('genPopulation with recursive=false must have query: string');
+      }
+      const populate = _.merge({}, { select: root }, recursion([pf + def.query, ''])); // TODO
       return _.merge(result, { populate });
     }
     return result;
@@ -65,7 +68,7 @@ const makePopulation = makeTraverser({
 const genPopulation = ({ root, pick }) => {
   const projector = makePopulation({ root, pick });
   return (info) => {
-    const result = _.mapValues(projector(info), (p) => _.assign({}, root, p));
+    const result = _.merge({}, { select: root }, projector(info));
     logger.debug('Population result', result);
     return result;
   };

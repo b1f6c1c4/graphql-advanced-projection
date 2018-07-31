@@ -6,7 +6,7 @@ const { makeExecutableSchema } = require('graphql-tools');
 const { prepareConfig } = require('../src/prepareConfig');
 const { makePopulation, genPopulation } = require('../src/population');
 
-describe.only('makePopulation', () => {
+describe('makePopulation', () => {
   const typeDefs = fs.readFileSync(path.join(__dirname, 'schema.graphql'), 'utf-8');
 
   const run = (config, query) => new Promise((resolve, reject) => {
@@ -85,7 +85,7 @@ describe.only('makePopulation', () => {
       },
       populate: [{
         path: 'wrap.field2',
-        select: { 'wrap2.foo': 1 },
+        select: { _id: 0, 'wrap2.foo': 1 },
       }],
     });
   });
@@ -110,6 +110,21 @@ describe.only('makePopulation', () => {
         'wrap.field2.f1': 1,
       },
     });
+  });
+
+  it('should throw not recursive', () => {
+    expect.hasAssertions();
+    return expect(run({
+      Obj: {
+        prefix: 'wrap.',
+        proj: {
+          field2: {
+            query: ['evil', 'evils'],
+            recursive: false,
+          },
+        },
+      },
+    }, '{ obj { field2 { f1 } } }')).rejects.toBeInstanceOf(Error);
   });
 
   it('should project deep inline fragment with typeCondition', () => {
@@ -168,15 +183,9 @@ describe.only('makePopulation', () => {
         proj: {
           field2: {
             query: 'q',
-            reference: {
-              as: 'aa',
-            },
           },
           field3: {
             query: 'p',
-            reference: {
-              as: 'bb',
-            },
           },
         },
       },
@@ -197,10 +206,10 @@ describe.only('makePopulation', () => {
       },
       populate: [{
         path: 'wrap.q',
-        select: { f1: 1 },
+        select: { _id: 0, f1: 1 },
       }, {
         path: 'wrap.p',
-        select: { 'fthr.tt': 1 },
+        select: { _id: 0, 'fthr.tt': 1 },
       }],
     });
   });
@@ -213,9 +222,6 @@ describe.only('makePopulation', () => {
         proj: {
           self: {
             query: 'q',
-            reference: {
-              as: 'aa',
-            },
           },
         },
       },
@@ -226,10 +232,10 @@ describe.only('makePopulation', () => {
       },
       populate: [{
         path: 'wrap.q',
-        select: { 'wrap.q': 1 },
+        select: { _id: 0, 'wrap.q': 1 },
         populate: [{
           path: 'wrap.q',
-          select: { 'wrap.field': 1 },
+          select: { _id: 0, 'wrap.field': 1 },
         }],
       }],
     });
@@ -269,22 +275,28 @@ describe('genPopulation', () => {
 
   it('should project simple', () => {
     expect.hasAssertions();
-    return expect(run({ Obj: { proj: { field1: 'a' } } }, '{ obj { field1 } }')).resolves.toEqual({
-      '': { _id: 0, a: 1 },
+    return expect(run({ root: { _id: 0 }, Obj: { proj: { field1: 'a' } } }, '{ obj { field1 } }')).resolves.toEqual({
+      path: '',
+      select: { _id: 0, a: 1 },
     });
   });
 
   it('should lookup simple', () => {
     expect.hasAssertions();
     return expect(run({
+      root: { _id: 0 },
       Obj: {
         proj: {
-          field2: { reference: 'foos' },
+          field2: { query: 'xx' },
         },
       },
     }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
-      '': { _id: 0, field2: 1 },
-      foos: { _id: 0, f1: 1 },
+      path: '',
+      select: { _id: 0, xx: 1 },
+      populate: [{
+        path: 'xx',
+        select: { _id: 0, f1: 1 },
+      }],
     });
   });
 });

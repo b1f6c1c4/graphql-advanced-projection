@@ -5,17 +5,17 @@ const { makeExecutableSchema } = require('graphql-tools');
 const { User } = require('./models');
 const gqlProjection = require('../../');
 
-const { parseInfo, resolvers } = gqlProjection({
+const { population, resolvers } = gqlProjection({
   User: {
     proj: {
-      items: 'itemsId.',
+      items: 'itemsId',
     },
   },
   Item: {
     proj: {
       itemId: '_id',
       field4: 'mongoD',
-      subs: 'subsId.',
+      subs: 'subsId',
     },
   },
 });
@@ -25,8 +25,12 @@ module.exports = makeExecutableSchema({
   resolvers: _.merge(resolvers, {
     Query: {
       async user(parent, args, context, info) {
-        const { projection, population } = parseInfo(info);
-        return User.findById(args.id, projection).populate(population);
+        const { select, populate } = population(info);
+        let promise = User.findById(args.id, select);
+        if (populate) {
+          promise = promise.populate(populate);
+        }
+        return promise;
       },
     },
   }),
