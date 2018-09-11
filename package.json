@@ -20,7 +20,7 @@
   "author": "b1f6c1c4 <b1f6c1c4@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "debug": "^3.0.1",
+    "debug": "^4.0.0",
     "lodash": "^4.17.4"
   },
   "devDependencies": {
