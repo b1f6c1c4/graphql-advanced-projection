@@ -17,6 +17,7 @@ describe('genResolvers', () => {
         evil: () => evil,
       },
     }),
+    resolverValidationOptions: { requireResolversForResolveType: false },
   }), query);
 
   it('should accept simple', async (done) => {

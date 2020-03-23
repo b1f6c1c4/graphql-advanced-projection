@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { makeExecutableSchema } = require('graphql-tools');
 const { User } = require('./models');
-const gqlProjection = require('../../');
+const gqlProjection = require('../..');
 
 const { project, resolvers } = gqlProjection({
   User: {
@@ -29,4 +29,5 @@ module.exports = makeExecutableSchema({
       field2: () => 'Hello World',
     },
   }),
+  resolverValidationOptions: { requireResolversForResolveType: false },
 });

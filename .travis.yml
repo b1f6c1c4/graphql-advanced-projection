@@ -6,7 +6,7 @@ branches:
   - /^greenkeeper/
 
 node_js:
-  - 8
+  - 12
 
 services:
   - mongodb

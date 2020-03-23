@@ -31,6 +31,7 @@ describe('makeProjection', () => {
           },
         },
       },
+      resolverValidationOptions: { requireResolversForResolveType: false },
     }), query).then((res) => {
       if (res.errors) {
         throw res.errors;
@@ -827,6 +828,7 @@ describe('genProjection', () => {
           },
         },
       },
+      resolverValidationOptions: { requireResolversForResolveType: false },
     }), query).then((res) => {
       if (res.errors) {
         throw res.errors;

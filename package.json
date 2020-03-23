@@ -14,28 +14,29 @@
   ],
   "scripts": {
     "lint": "eslint --ignore-path .gitignore .",
-    "test": "yarn lint && yarn jest --coverage --runInBand --forceExit",
+    "test": "yarn lint && yarn jest --coverage --runInBand --forceExit --detectOpenHandles",
     "coveralls": "cat ./coverage/lcov.info | coveralls"
   },
   "author": "b1f6c1c4 <b1f6c1c4@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "debug": "^3.0.1",
+    "debug": "^4.1.1",
     "lodash": "^4.17.4"
   },
   "devDependencies": {
     "coveralls": "^3.0.0",
-    "eslint": "^4.18.2",
-    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-import": "^2.9.0",
-    "eslint-plugin-lodash-fp": "^2.1.3",
+    "eslint-plugin-lodash-fp": "^2.2.0-a1",
     "graphql": ">0.12.3",
-    "graphql-tools": "^2.18.0",
-    "jest-cli": "^22.4.0",
-    "jest-mongoose": "^1.0.2",
+    "graphql-tools": "^4.0.7",
+    "jest-cli": "^25.1.0",
+    "jest-mongoose": "^1.1.0",
     "mongoose": "^5.0.9"
   },
   "jest": {
+    "testEnvironment": "node",
     "collectCoverageFrom": [
       "src/**/*.js"
     ]

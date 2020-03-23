@@ -86,6 +86,7 @@ module.exports = makeExecutableSchema({
       field2: () => 'Hello World',
     },
   }),
+  resolverValidationOptions: { requireResolversForResolveType: false },
 });
 ```
 
