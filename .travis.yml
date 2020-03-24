@@ -1,10 +1,5 @@
 language: node_js
 
-branches:
-  only:
-  - master
-  - /^greenkeeper/
-
 node_js:
   - 12
 
