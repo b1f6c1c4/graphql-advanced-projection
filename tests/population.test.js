@@ -278,8 +278,7 @@ describe('genPopulation', () => {
   it('should project simple', () => {
     expect.hasAssertions();
     return expect(run({ root: { _id: 0 }, Obj: { proj: { field1: 'a' } } }, '{ obj { field1 } }')).resolves.toEqual({
-      path: '',
-      select: { _id: 0, a: 1 },
+      proj: { _id: 0, a: 1 },
     });
   });
 
@@ -293,9 +292,8 @@ describe('genPopulation', () => {
         },
       },
     }, '{ obj { field2 { f1 } } }')).resolves.toEqual({
-      path: '',
-      select: { _id: 0, xx: 1 },
-      populate: [{
+      proj: { _id: 0, xx: 1 },
+      popu: [{
         path: 'xx',
         select: { _id: 0, f1: 1 },
       }],

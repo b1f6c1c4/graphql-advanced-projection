@@ -66,9 +66,10 @@ const makePopulation = makeTraverser({
 }, ['', '']);
 
 const genPopulation = ({ root, pick }) => {
-  const projector = makePopulation({ root, pick });
+  const populator = makePopulation({ root, pick });
   return (info) => {
-    const result = _.merge({}, { select: root }, projector(info));
+    const { select, populate } = _.merge({}, { select: root }, populator(info));
+    const result = { proj: select, popu: populate };
     logger.debug('Population result', result);
     return result;
   };
