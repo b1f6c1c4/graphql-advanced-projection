@@ -56,7 +56,7 @@ describe('makeProjection', () => {
           },
         },
       },
-    }, '{ obj { field1 } }')).resolves.toEqual({
+    }, '{ obj { __typename field1 } }')).resolves.toEqual({
     });
   });
 
