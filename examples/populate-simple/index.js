@@ -18,6 +18,11 @@ const { population, resolvers } = gqlProjection({
       subs: 'subsId',
     },
   },
+  SubItem: {
+    proj: {
+      content: 'c',
+    },
+  },
 });
 
 module.exports = makeExecutableSchema({
@@ -34,4 +39,5 @@ module.exports = makeExecutableSchema({
       },
     },
   }),
+  resolverValidationOptions: { requireResolversForResolveType: false },
 });

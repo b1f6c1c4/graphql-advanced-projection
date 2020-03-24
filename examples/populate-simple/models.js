@@ -1,5 +1,10 @@
 const mongoose = require('mongoose');
 
+const SubItemSchema = new mongoose.Schema({
+  _id: String,
+  c: String,
+});
+
 const ItemSchema = new mongoose.Schema({
   _id: String,
   mongoD: String,
@@ -7,11 +12,6 @@ const ItemSchema = new mongoose.Schema({
     type: String,
     ref: 'sub-items',
   }],
-});
-
-const SubItemSchema = new mongoose.Schema({
-  _id: String,
-  content: String,
 });
 
 const UserSchema = new mongoose.Schema({

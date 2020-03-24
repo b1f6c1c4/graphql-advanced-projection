@@ -12,6 +12,6 @@ type Item {
   subs: [SubItem]
 }
 
-type SubItem{
+type SubItem {
   content: String
 }

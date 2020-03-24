@@ -9,4 +9,9 @@ type User {
 type Item {
   itemId: ID
   field4: String
+  subs: [SubItem]
+}
+
+type SubItem {
+  content: String
 }

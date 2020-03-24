@@ -34,9 +34,12 @@ query {
   done();
 });
 
-it('field4', async (done) => {
-  await make.Item({ _id: 'item1', mongoD: 'd1' });
-  await make.Item({ _id: 'item2', mongoD: 'd2' });
+it('content', async (done) => {
+  await make.SubItem({ _id: 'sub1', c: 'foo1' });
+  await make.SubItem({ _id: 'sub2', c: 'foo2' });
+  await make.SubItem({ _id: 'sub3', c: 'foo3' });
+  await make.Item({ _id: 'item1', mongoD: 'd1', subsId: ['sub1', 'sub2'] });
+  await make.Item({ _id: 'item2', mongoD: 'd2', subsId: ['sub1', 'sub3'] });
   await make.User({
     _id: 'the-id',
     itemsId: ['item1', 'item2'],
@@ -46,6 +49,9 @@ query {
   user(id: "the-id") {
     items {
       field4
+      subs {
+        content
+      }
     }
   }
 }
@@ -54,8 +60,8 @@ query {
     data: {
       user: {
         items: [
-          { field4: 'd1' },
-          { field4: 'd2' },
+          { field4: 'd1', subs: [{ content: 'foo1' }, { content: 'foo2' }] },
+          { field4: 'd2', subs: [{ content: 'foo1' }, { content: 'foo3' }] },
         ],
       },
     },

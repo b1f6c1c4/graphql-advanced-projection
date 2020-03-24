@@ -2,7 +2,7 @@ const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const { makeExecutableSchema } = require('graphql-tools');
-const { User } = require('./models');
+const { User, Item } = require('./models');
 const gqlProjection = require('../..');
 
 const { project, resolvers } = gqlProjection({
@@ -15,6 +15,12 @@ const { project, resolvers } = gqlProjection({
     proj: {
       itemId: '_id',
       field4: 'mongoD',
+      subs: { query: 'subsId' },
+    },
+  },
+  SubItem: {
+    proj: {
+      content: 'c',
     },
   },
 });
@@ -41,5 +47,18 @@ module.exports = makeExecutableSchema({
         return parent.items;
       },
     },
+    Item: {
+      async subs(parent, args, context, info) {
+        const proj = project(info);
+        if (_.keys(proj).length === 1) {
+          // Only itemId is inquired.
+          // Save some db queries!
+          return parent.subsId.map((id) => ({ _id: id }));
+        }
+        await Item.populate(parent, { path: 'subs', select: proj });
+        return parent.subs;
+      },
+    },
   }),
+  resolverValidationOptions: { requireResolversForResolveType: false },
 });
