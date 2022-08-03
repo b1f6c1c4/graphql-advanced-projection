@@ -6,11 +6,8 @@
 [![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/b1f6c1c4/graphql-advanced-projection.svg?style=flat-square)](https://github.com/b1f6c1c4/graphql-advanced-projection)
 [![license](https://img.shields.io/github/license/b1f6c1c4/graphql-advanced-projection.svg?style=flat-square)](https://github.com/b1f6c1c4/graphql-advanced-projection/blob/master/LICENSE.md)
 
-[![Travis](https://img.shields.io/travis/b1f6c1c4/graphql-advanced-projection.svg?style=flat-square)](https://travis-ci.org/b1f6c1c4/graphql-advanced-projection)
+[![Appveyor Build](https://img.shields.io/appveyor/build/b1f6c1c4/graphql-advanced-projection?style=flat-square)](https://ci.appveyor.com/project/b1f6c1c4/graphql-advanced-projection)
 [![Coveralls](https://img.shields.io/coveralls/github/b1f6c1c4/graphql-advanced-projection.svg?style=flat-square)](https://coveralls.io/github/b1f6c1c4/graphql-advanced-projection)
-[![Greenkeeper badge](https://img.shields.io/badge/Greenkeeper-enabled-brightgreen.svg?style=flat-square)](https://greenkeeper.io/)
-[![Badges](https://img.shields.io/badge/badges-9%2F9-ff6799.svg?style=flat-square)](https://shields.io/)
-<!-- [![Greenkeeper badge](https://badges.greenkeeper.io/b1f6c1c4/graphql-advanced-projection.svg)](https://greenkeeper.io/) -->
 
 > Fully customizable Mongoose/MongoDB projection generator.
 
@@ -72,6 +69,10 @@ const { project, resolvers } = gqlProjection({
 ### Combine everything together
 
 ```js
+const { makeExecutableSchema } = require('@graphql-tools/schema');
+
+/* ... */
+
 module.exports = makeExecutableSchema({
   typeDefs,
   resolvers: _.merge(resolvers, {

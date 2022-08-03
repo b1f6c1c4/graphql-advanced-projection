@@ -43,7 +43,7 @@ module.exports = makeExecutableSchema({
             return 'AdminUser';
           case 'normal':
             return 'NormalUser';
-          default:
+          default: /* istanbul ignore next */
             return null;
         }
       },

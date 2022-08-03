@@ -1,7 +1,7 @@
 # Terms
 
 ## Path
-A dot-separated string that is to be projected. Used by [Lodash](https://lodash.com/docs/4.17.5#get) and [MongoDB](https://docs.mongodb.com/manual/core/document/#document-dot-notation).
+A dot-separated string that is to be projected. Used by [Lodash](https://lodash.com/docs/4.17.21#get) and [MongoDB](https://docs.mongodb.com/manual/core/document/#document-dot-notation).
 
 Example:
 - `'_id'` - the most common path.

@@ -15,7 +15,7 @@
   "scripts": {
     "lint": "eslint --ignore-path .gitignore .",
     "test": "npm run lint && jest --coverage --runInBand",
-    "coveralls": "cat ./coverage/lcov.info | coveralls"
+    "coveralls": "coveralls < ./coverage/lcov.info"
   },
   "author": "b1f6c1c4 <b1f6c1c4@gmail.com>",
   "license": "MIT",
@@ -36,9 +36,6 @@
     "mongoose": "^6.5.0"
   },
   "jest": {
-    "testEnvironment": "node",
-    "collectCoverageFrom": [
-      "src/**/*.js"
-    ]
+    "testEnvironment": "node"
   }
 }

@@ -12,8 +12,8 @@ module.exports.connect = () => new Promise((resolve, reject) => {
   });
 
   try {
-    mongoose.connect(`mongodb://${host}:27017/${dbName}`).then(resolve, reject);
-  } catch (e) {
+    mongoose.connect(`mongodb://${host}/${dbName}`).then(resolve, reject);
+  } catch (e) /* istanbul ignore next */ {
     reject(e);
   }
 });
