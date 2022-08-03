@@ -9,7 +9,7 @@ const { makeProjection, genProjection } = require('../src/projection');
 describe('makeProjection', () => {
   const typeDefs = fs.readFileSync(path.join(__dirname, 'schema.graphql'), 'utf-8');
 
-  const run = (config, query) => new Promise((resolve, reject) => {
+  const run = (config, source) => new Promise((resolve, reject) => {
     const pick = _.mapValues(_.constant)(config);
     const go = (info) => {
       try {
@@ -19,20 +19,23 @@ describe('makeProjection', () => {
         reject(e);
       }
     };
-    graphql(makeExecutableSchema({
-      typeDefs,
-      resolvers: {
-        Query: {
-          obj: (parent, args, context, info) => {
-            go(info);
-          },
-          evil: (parent, args, context, info) => {
-            go(info);
+    graphql({
+      schema: makeExecutableSchema({
+        typeDefs,
+        resolvers: {
+          Query: {
+            obj: (parent, args, context, info) => {
+              go(info);
+            },
+            evil: (parent, args, context, info) => {
+              go(info);
+            },
           },
         },
-      },
-      resolverValidationOptions: { requireResolversForResolveType: false },
-    }), query).then((res) => {
+        resolverValidationOptions: { requireResolversForResolveType: false },
+      }),
+      source,
+    }).then((res) => {
       if (res.errors) {
         throw res.errors;
       }
@@ -807,7 +810,7 @@ fragment f on Child {
 describe('genProjection', () => {
   const typeDefs = fs.readFileSync(path.join(__dirname, 'schema.graphql'), 'utf-8');
 
-  const run = (config, query) => new Promise((resolve, reject) => {
+  const run = (config, source) => new Promise((resolve, reject) => {
     const go = (info) => {
       try {
         const proj = genProjection(prepareConfig(config));
@@ -816,20 +819,23 @@ describe('genProjection', () => {
         reject(e);
       }
     };
-    graphql(makeExecutableSchema({
-      typeDefs,
-      resolvers: {
-        Query: {
-          obj: (parent, args, context, info) => {
-            go(info);
-          },
-          evil: (parent, args, context, info) => {
-            go(info);
+    graphql({
+      schema: makeExecutableSchema({
+        typeDefs,
+        resolvers: {
+          Query: {
+            obj: (parent, args, context, info) => {
+              go(info);
+            },
+            evil: (parent, args, context, info) => {
+              go(info);
+            },
           },
         },
-      },
-      resolverValidationOptions: { requireResolversForResolveType: false },
-    }), query).then((res) => {
+        resolverValidationOptions: { requireResolversForResolveType: false },
+      }),
+      source,
+    }).then((res) => {
       if (res.errors) {
         throw res.errors;
       }

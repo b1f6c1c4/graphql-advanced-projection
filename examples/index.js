@@ -1,7 +1,7 @@
 const { graphql } = require('graphql');
 const mongoose = require('mongoose');
 
-module.exports.run = (schema, query) => graphql(schema, query);
+module.exports.run = (schema, source) => graphql({ schema, source });
 
 module.exports.connect = () => new Promise((resolve, reject) => {
   const host = process.env.MONGO_HOST || 'localhost';

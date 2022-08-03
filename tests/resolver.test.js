@@ -9,18 +9,21 @@ const { genResolvers } = require('../src/resolver');
 describe('genResolvers', () => {
   const typeDefs = fs.readFileSync(path.join(__dirname, 'schema.graphql'), 'utf-8');
 
-  const run = (config, query, { obj, evil }) => graphql(makeExecutableSchema({
-    typeDefs,
-    resolvers: _.merge(genResolvers(prepareConfig(config)), {
-      Query: {
-        obj: () => obj,
-        evil: () => evil,
-      },
+  const run = (config, source, { obj, evil }) => graphql({
+    schema: makeExecutableSchema({
+      typeDefs,
+      resolvers: _.merge(genResolvers(prepareConfig(config)), {
+        Query: {
+          obj: () => obj,
+          evil: () => evil,
+        },
+      }),
+      resolverValidationOptions: { requireResolversForResolveType: false },
     }),
-    resolverValidationOptions: { requireResolversForResolveType: false },
-  }), query);
+    source,
+  });
 
-  it('should accept simple', async (done) => {
+  it('should accept simple', async () => {
     const result = await run({
       Obj: {
         proj: {
@@ -31,10 +34,9 @@ describe('genResolvers', () => {
       obj: [{ x: 'xxx' }],
     });
     expect(result).toEqual({ data: { obj: [{ field1: 'xxx' }] } });
-    done();
   });
 
-  it('should accept complex 1', async (done) => {
+  it('should accept complex 1', async () => {
     const result = await run({
       Evil: [
         ['obj', {
@@ -52,10 +54,9 @@ describe('genResolvers', () => {
       obj: [{ evil: { x: 'xxx' } }],
     });
     expect(result).toEqual({ data: { obj: [{ evil: { field: 'xxx' } }] } });
-    done();
   });
 
-  it('should accept complex 2', async (done) => {
+  it('should accept complex 2', async () => {
     const result = await run({
       Evil: [
         ['obj', {
@@ -73,10 +74,9 @@ describe('genResolvers', () => {
       evil: { y: 'xxx' },
     });
     expect(result).toEqual({ data: { evil: { field: 'xxx' } } });
-    done();
   });
 
-  it('should accept complex 3', async (done) => {
+  it('should accept complex 3', async () => {
     const result = await run({
       Evil: [
         ['obj', {
@@ -94,6 +94,5 @@ describe('genResolvers', () => {
       evil: { field: 'xxx' },
     });
     expect(result).toEqual({ data: { evil: { field: 'xxx' } } });
-    done();
   });
 });

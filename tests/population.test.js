@@ -9,7 +9,7 @@ const { makePopulation, genPopulation } = require('../src/population');
 describe('makePopulation', () => {
   const typeDefs = fs.readFileSync(path.join(__dirname, 'schema.graphql'), 'utf-8');
 
-  const run = (config, query) => new Promise((resolve, reject) => {
+  const run = (config, source) => new Promise((resolve, reject) => {
     const pick = _.mapValues(_.constant)(config);
     const go = (info) => {
       try {
@@ -19,29 +19,31 @@ describe('makePopulation', () => {
         reject(e);
       }
     };
-    graphql(makeExecutableSchema({
-      typeDefs,
-      resolvers: {
-        Query: {
-          obj: (parent, args, context, info) => {
-            go(info);
-          },
-          evil: (parent, args, context, info) => {
-            go(info);
+    graphql({
+      schema: makeExecutableSchema({
+        typeDefs,
+        resolvers: {
+          Query: {
+            obj: (parent, args, context, info) => {
+              go(info);
+            },
+            evil: (parent, args, context, info) => {
+              go(info);
+            },
           },
         },
-      },
-      resolverValidationOptions: { requireResolversForResolveType: false },
-    }), query).then((res) => {
+        resolverValidationOptions: { requireResolversForResolveType: false },
+      }),
+      source,
+    }).then((res) => {
       if (res.errors) {
         throw res.errors;
       }
     });
   });
 
-  it('should project default when not configured', () => {
-    expect.hasAssertions();
-    return expect(run({}, '{ obj { field1 } }')).resolves.toEqual({
+  it('should project default when not configured', async () => {
+    expect(await run({}, '{ obj { field1 } }')).toEqual({
       path: '',
       select: { field1: 1 },
     });
@@ -246,7 +248,7 @@ describe('makePopulation', () => {
 describe('genPopulation', () => {
   const typeDefs = fs.readFileSync(path.join(__dirname, 'schema.graphql'), 'utf-8');
 
-  const run = (config, query) => new Promise((resolve, reject) => {
+  const run = (config, source) => new Promise((resolve, reject) => {
     const go = (info) => {
       try {
         const proj = genPopulation(prepareConfig(config));
@@ -255,20 +257,23 @@ describe('genPopulation', () => {
         reject(e);
       }
     };
-    graphql(makeExecutableSchema({
-      typeDefs,
-      resolvers: {
-        Query: {
-          obj: (parent, args, context, info) => {
-            go(info);
-          },
-          evil: (parent, args, context, info) => {
-            go(info);
+    graphql({
+      schema: makeExecutableSchema({
+        typeDefs,
+        resolvers: {
+          Query: {
+            obj: (parent, args, context, info) => {
+              go(info);
+            },
+            evil: (parent, args, context, info) => {
+              go(info);
+            },
           },
         },
-      },
-      resolverValidationOptions: { requireResolversForResolveType: false },
-    }), query).then((res) => {
+        resolverValidationOptions: { requireResolversForResolveType: false },
+      }),
+      source,
+    }).then((res) => {
       if (res.errors) {
         throw res.errors;
       }
