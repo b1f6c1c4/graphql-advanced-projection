@@ -1,9 +1,9 @@
 const jestMongoose = require('jest-mongoose');
 const models = require('./models');
 const gql = require('.');
-const { run, connect } = require('..');
+const { run, connect, disconnect } = require('..');
 
-const { make } = jestMongoose(models, connect);
+const { make } = jestMongoose(models, connect, disconnect);
 
 it('User.field1', async (done) => {
   await make.User({
