@@ -5,7 +5,7 @@ const { run, connect, disconnect } = require('..');
 
 const { make } = jestMongoose(models, connect, disconnect);
 
-it('User.field1', async (done) => {
+it('User.field1', async () => {
   await make.User({
     _id: 'the-id',
     type: 'admin',
@@ -25,10 +25,9 @@ query {
       },
     },
   });
-  done();
 });
 
-it('User.field1 with typename', async (done) => {
+it('User.field1 with typename', async () => {
   await make.User({
     _id: 'the-id',
     type: 'admin',
@@ -50,10 +49,9 @@ query {
       },
     },
   });
-  done();
 });
 
-it('AdminUser.field1', async (done) => {
+it('AdminUser.field1', async () => {
   await make.User({
     _id: 'the-id',
     type: 'admin',
@@ -75,10 +73,9 @@ query {
       },
     },
   });
-  done();
 });
 
-it('NormalUser.field1', async (done) => {
+it('NormalUser.field1', async () => {
   await make.User({
     _id: 'the-id',
     type: 'normal',
@@ -100,10 +97,9 @@ query {
       },
     },
   });
-  done();
 });
 
-it('field2', async (done) => {
+it('field2', async () => {
   await make.User({
     _id: 'the-id',
     type: 'admin',
@@ -125,10 +121,9 @@ query {
       },
     },
   });
-  done();
 });
 
-it('field3', async (done) => {
+it('field3', async () => {
   await make.User({
     _id: 'the-id',
     type: 'normal',
@@ -152,5 +147,4 @@ fragment frag on NormalUser {
       },
     },
   });
-  done();
 });

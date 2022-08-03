@@ -5,7 +5,7 @@ const { run, connect, disconnect } = require('..');
 
 const { make } = jestMongoose(models, connect, disconnect);
 
-it('userId', async (done) => {
+it('userId', async () => {
   await make.User({ _id: 'the-id' });
   const result = await run(gql, `
 query {
@@ -21,10 +21,9 @@ query {
       },
     },
   });
-  done();
 });
 
-it('field1', async (done) => {
+it('field1', async () => {
   await make.User({ _id: 'the-id', mongoA: 'value' });
   const result = await run(gql, `
 query {
@@ -40,10 +39,9 @@ query {
       },
     },
   });
-  done();
 });
 
-it('field2', async (done) => {
+it('field2', async () => {
   await make.User({ _id: 'the-id' });
   const result = await run(gql, `
 query {
@@ -59,5 +57,4 @@ query {
       },
     },
   });
-  done();
 });

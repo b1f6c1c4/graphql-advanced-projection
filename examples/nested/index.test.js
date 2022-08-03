@@ -5,7 +5,7 @@ const { run, connect, disconnect } = require('..');
 
 const { make } = jestMongoose(models, connect, disconnect);
 
-it('alters.field4', async (done) => {
+it('alters.field4', async () => {
   await make.User({
     _id: 'the-id',
     nested: [
@@ -32,5 +32,4 @@ query {
       },
     },
   });
-  done();
 });
