@@ -11,6 +11,10 @@ stack: node node, mongodb
 shallow_clone: true
 clone_depth: 1
 
+environment:
+  COVERALLS_REPO_TOKEN:
+    secure: DJqo9Kbit+Ndeo872mHNnpvhC3YiOjmSlc7sI01gHeSbxRC2t6VMfY8Fdjh7D3kW
+
 install:
   - npm ci
 
@@ -20,3 +24,4 @@ test_script:
   - node --version
   - npm --version
   - npm test --color
+  - npm run coveralls
