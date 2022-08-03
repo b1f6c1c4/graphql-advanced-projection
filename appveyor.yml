@@ -1,0 +1,23 @@
+version: 1.1.0.{build}
+
+skip_tags: true
+
+skip_commits:
+  message: /\[ci skip\]|\[skip ci\]/
+
+image: Ubuntu2004
+stack: node node, mongodb
+
+shallow_clone: true
+clone_depth: 1
+
+install:
+  - npm ci
+  - cd example && npm ci
+
+build: off
+
+test_script:
+  - node --version
+  - npm --version
+  - npm test --color
