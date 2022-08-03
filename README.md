@@ -16,7 +16,7 @@
 
 ## Why
 
-We already have [graphql-projection](https://github.com/bharley/graphql-projection), [graphql-mongodb-projection](https://github.com/du5rte/graphql-mongodb-projection), and [graphql-db-projection](https://github.com/markshapiro/graphql-db-projection).
+We already have [graphql-projection](https://github.com/bharley/graphql-projection), [graphql-mongodb-projection](https://github.com/du5rte/graphql-mongodb-projection), [graphql-db-projection](https://github.com/markshapiro/graphql-db-projection), and [graphql-fields-projection](https://github.com/Impact-Technical-Resources/graphql-fields-projection).
 But `graphql-advanced-projection` is different from all of them above in the following ways:
 * **Separete graphql schema and mongodb projection config.** This helps you decouple schema and mongodb into two parts, each of them may change independently. Write graphql in `.graphql`, write config in javascript or `.json`.
 * **Easy customization.** No more `gqlField: { type: new GraphQLNonNull(GraphQLInt), projection: 'mongoField' }`. Simply `gqlField: 'mongoField'`.
@@ -26,7 +26,7 @@ But `graphql-advanced-projection` is different from all of them above in the fol
 ## Installation
 
 ```sh
-$ yarn add graphql-advanced-projection
+$ npm i graphql-advanced-projection
 ```
 ## Usage
 

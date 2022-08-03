@@ -14,26 +14,26 @@
   ],
   "scripts": {
     "lint": "eslint --ignore-path .gitignore .",
-    "test": "yarn lint && yarn jest --coverage --runInBand --forceExit --detectOpenHandles",
+    "test": "npm run lint && jest --coverage --runInBand",
     "coveralls": "cat ./coverage/lcov.info | coveralls"
   },
   "author": "b1f6c1c4 <b1f6c1c4@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "debug": "^4.1.1",
-    "lodash": "^4.17.4"
+    "debug": "^4.3.4",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "coveralls": "^3.0.0",
-    "eslint": "^6.8.0",
-    "eslint-config-airbnb-base": "^14.1.0",
-    "eslint-plugin-import": "^2.9.0",
+    "@graphql-tools/schema": "^8.3.1",
+    "coveralls": "^3.1.1",
+    "eslint": "^8.21.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-lodash-fp": "^2.2.0-a1",
-    "graphql": ">0.12.3",
-    "graphql-tools": "^4.0.7",
-    "jest-cli": "^25.1.0",
-    "jest-mongoose": "^1.1.0",
-    "mongoose": "^5.0.9"
+    "graphql": "^16.5.0",
+    "jest-cli": "^28.1.0",
+    "jest-mongoose": "^2.0.0",
+    "mongoose": "^6.5.0"
   },
   "jest": {
     "testEnvironment": "node",

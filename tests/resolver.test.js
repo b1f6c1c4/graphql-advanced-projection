@@ -2,7 +2,7 @@ const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const { graphql } = require('graphql');
-const { makeExecutableSchema } = require('graphql-tools');
+const { makeExecutableSchema } = require('@graphql-tools/schema');
 const { prepareConfig } = require('../src/prepareConfig');
 const { genResolvers } = require('../src/resolver');
 
