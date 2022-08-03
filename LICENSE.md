@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2018 Jinzheng Tu
+Copyright (c) 2022 b1f6c1c4
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
